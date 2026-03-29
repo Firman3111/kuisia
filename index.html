@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuisia - Platform Kuis Interaktif</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span></a>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <section class="hero">
+        <h1>Jelajahi Kuis Interaktif</h1>
+        <p>Mainkan kuis terbaru yang dibuat oleh komunitas Kuisia</p>
+        
+        <div class="slider-wrapper" style="max-width: 1400px; margin: 40px auto 0;">
+
+            <div class="search-container" style="text-align: center; margin: 20px 0;">
+                <input type="text" id="search-quiz" placeholder="Cari judul, Nama Author atau deskripsi kuis..." 
+                    style="padding: 10px 20px; width: 80%; max-width: 800px; border-radius: 25px; border: 1px solid #ddd;">
+            </div>
+            
+            <div id="quiz-list" class="quiz-grid">
+                <p>Sedang memuat kuis...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-header">
+            <h2>Kenapa Kuisia?</h2>
+            <p class="tagline">Platform kuis yang dirancang untuk pembelajaran modern yang efektif dan menyenangkan.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="card">
+                <img src="cepat.gif" alt="Cepat" style="width: 160px; height: 160px;">
+                <h3>Cepat</h3>
+                <p>Buat soal dalam hitungan detik.</p>
+            </div>
+            <div class="card">
+                <img src="realtime.gif" alt="Cepat" style="width: 160px; height: 160px;">
+                <h3>Real-time</h3>
+                <p>Lihat statistik peserta langsung.</p>
+            </div>
+            <div class="card">
+                <img src="mobile.gif" alt="Cepat" style="width: 160px; height: 160px;">
+                <h3>Mobile</h3>
+                <p>Nyaman diakses dari HP mana saja.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-item">
+                <h2 class="counter" id="user-count" data-target="0">0</h2>
+                <p>Kuis telah dibuat</p>
+            </div>
+
+            <div class="stat-item">
+                <h2 class="counter" id="admin-count" data-target="0">0</h2>
+                <p>Orang menyelesaikan kuis ini</p>
+            </div>
+
+            <div class="stat-item rating-box">
+                <div class="stars" id="user-stars">
+                    <i class="fas fa-star" data-index="1"></i>
+                    <i class="fas fa-star" data-index="2"></i>
+                    <i class="fas fa-star" data-index="3"></i>
+                    <i class="fas fa-star" data-index="4"></i>
+                    <i class="fas fa-star" data-index="5"></i>
+                </div>
+                <p id="rating-info">Memuat ulasan...</p> 
+                <h3 class="rating-value" id="rating-value">0.0 / 5.0</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonial-section">
+        <h2 class="section-title" style="text-align: center; margin-bottom: 40px;">Apa Kata Pengguna Kami?</h2>
+        
+        <div class="slider-container">
+            <div class="testimonial-track">
+                <div class="testimonial-card">
+                    <div class="testi-img" style="background-image: url('Budi.jpg');"></div>
+                    <div class="testi-content">
+                        <p>"Kuisia sangat membantu! Membuat kuis jadi cepat."</p>
+                        <h4>- Budi Santoso, Siswa</h4>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testi-img" style="background-image: url('Siti_Aminah.jpg');"></div>
+                    <div class="testi-content">
+                        <p>"Fitur lengkap dan tampilan modern. Sangat suka!"</p>
+                        <h4>- Siti Aminah, Guru</h4>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testi-img" style="background-image: url('Budi.jpg');"></div>
+                    <div class="testi-content">
+                        <p>"Sangat mudah digunakan untuk pemula seperti saya."</p>
+                        <h4>- Daniswara Setya, Guru</h4>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testi-img" style="background-image: url('Siti_Aminah.jpg');"></div>
+                    <div class="testi-content">
+                        <p>"Pengalaman belajar jadi lebih seru dan interaktif."</p>
+                        <h4>- Andi Wijaya, Siswa</h4>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card"><div class="testi-img"></div><div class="testi-content"><p>"Kuisia sangat membantu!"</p><h4>- Budi Santoso</h4></div></div>
+                <div class="testimonial-card"><div class="testi-img"></div><div class="testi-content"><p>"Fitur lengkap!"</p><h4>- Siti Aminah</h4></div></div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+    <div id="customModal" class="my-modal">
+        <div class="modal-content-custom">
+            <i id="modal-icon" class="fas fa-check-circle fa-4x" style="color: #8458B3;"></i>
+            <h3 id="modal-title" style="margin-top: 15px;">Terima Kasih!</h3>
+            <p id="modal-text">Ulasan Anda sangat berharga bagi Kuisia.</p>
+            <button id="close-modal-btn" class="btn-primary" style="border:none; padding: 10px 30px; border-radius: 8px; cursor: pointer;">Tutup</button>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:#fff; padding:25px; border-radius:15px; text-align:center; max-width:320px; width:90%; position:relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div id="alert-icon" style="font-size: 3rem; margin-bottom: 15px;"></div>
+            <h3 id="alert-title" style="margin-bottom: 10px; color: #333;"></h3>
+            <p id="alert-message" style="color: #666; font-size: 0.9rem; margin-bottom: 20px;"></p>
+            <button onclick="closeAlert()" style="background:#4a90e2; color:white; border:none; padding:10px 25px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%;">Tutup</button>
+        </div>
+    </div>
+
+    <div id="share-modal" class="modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:#fff; padding:30px 20px 20px 20px; border-radius:15px; text-align:center; max-width:350px; width:90%; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            
+            <button onclick="closeShareModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:1.5rem; color:#aaa; cursor:pointer; line-height:1;">&times;</button>
+
+            <h3 style="margin-bottom: 25px; color: #333; font-size: 1.2rem;">Bagikan Kuis</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+                <a id="share-wa" target="_blank" style="text-decoration:none; color:#25D366;"><i class="fab fa-whatsapp" style="font-size: 2.5rem;"></i><br><span style="font-size:0.7rem; color:#666;">WhatsApp</span></a>
+                <a id="share-fb" target="_blank" style="text-decoration:none; color:#1877F2;"><i class="fab fa-facebook" style="font-size: 2.5rem;"></i><br><span style="font-size:0.7rem; color:#666;">Facebook</span></a>
+                <a id="share-x" target="_blank" style="text-decoration:none; color:#000;"><i class="fab fa-x-twitter" style="font-size: 2.5rem;"></i><br><span style="font-size:0.7rem; color:#666;">X</span></a>
+                <a id="share-tt" href="javascript:void(0)" onclick="copyLinkOnly()" style="text-decoration:none; color:#000;"><i class="fab fa-tiktok" style="font-size: 2.5rem;"></i><br><span style="font-size:0.7rem; color:#666;">TikTok</span></a>
+            </div>
+
+            <div style="display: flex; background: #f8f9fa; border: 1px solid #eee; padding: 5px; border-radius: 10px; align-items: center;">
+                <input type="text" id="share-link-input" readonly style="flex:1; border:none; background:transparent; padding:8px; font-size:0.8rem; outline:none; color:#555;">
+                <button onclick="copyLinkOnly()" style="background:#4a90e2; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">Salin</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script src="index-script.js"></script>
+
+    
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Kami - Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; padding: 40px 10%; }
+        .team-member { text-align: center; }
+        .team-member img { width: 150px; height: 150px; border-radius: 50%; transition: transform 0.3s; object-fit: cover; }
+        .team-member img:hover { transform: scale(1.1); }
+        .marketing-section { background: #fcfdfe; padding: 60px 10%; text-align: center; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <section class="about-section">
+        <h1 style="color: var(--accent); text-align: center; margin-bottom: 20px;">Mengenal Kuisia</h1>
+        <p>Kuisia lahir dari satu keyakinan sederhana: bahwa proses belajar tidak harus membosankan. Kami melihat tantangan besar dalam dunia pendidikan modern, di mana fokus dan keterlibatan siswa sering kali teralihkan oleh distraksi digital. Kuisia hadir untuk mengubah tantangan tersebut menjadi peluang melalui interaksi yang menyenangkan.</p>
+        <p>Sebagai platform kuis interaktif, kami memadukan elemen gamifikasi dengan materi pembelajaran yang terstruktur. Kami percaya bahwa ketika belajar terasa seperti sebuah petualangan, pengetahuan akan terserap dengan lebih alami dan bertahan lebih lama dalam ingatan.</p>
+        <p>Sejak awal berdiri, misi kami adalah memberdayakan para pendidik. Kami menyediakan alat yang intuitif agar guru dapat menciptakan kuis dalam hitungan menit, memberikan umpan balik secara instan, dan memantau perkembangan setiap siswa dengan data yang akurat.</p>
+        <p>Kami terus berinovasi untuk membangun ekosistem belajar yang inklusif. Di Kuisia, kami menghargai kreativitas, kemudahan penggunaan, dan dampak nyata bagi dunia pendidikan di Indonesia dan sekitarnya.</p>
+    </section>
+
+    <h1 style="color: var(--accent); text-align: center;">Meet The Team!</h1>
+
+    <section class="team-grid">
+        <div class="team-member">
+            <img src="abdul Harari.png" alt="Team">
+            <h3>Abdul Harari</h3>
+            <p>Lead Developer</p>
+        </div>
+
+        <div class="team-member">
+            <img src="Dina smith.png" alt="Team">
+            <h3>Dina Smith</h3>
+            <p>Lead Design</p>
+        </div>
+
+        <div class="team-member">
+            <img src="Hubert Desso.png" alt="Team">
+            <h3>Hubert Desso</h3>
+            <p>Lead Marketing</p>
+        </div>
+    </section>
+
+    <section class="marketing-section">
+        <h2>Siap Belajar Lebih Seru?</h2>
+        <p>Pesan marketing Anda di sini untuk meyakinkan pengunjung.</p>
+        <a href="pricing.html" class="btn-primary" style="display: inline-block; padding: 15px 30px; margin-top: 20px;">Lihat Paket Pricing</a>
+    </section>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('nav-overlay');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

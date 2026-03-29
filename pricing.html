@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <div style="padding: 40px 10% 0 10%; text-align: center; max-width: 1400px; margin: 0 auto;">
+        <h1 style="color: var(--accent); margin-bottom: 20px;">Pilihan Paket Kuisia</h1>
+        <p style="color: var(--text); line-height: 1.6; margin-bottom: 15px;">
+            Kuisia menyediakan berbagai pilihan paket yang dirancang khusus untuk kebutuhan individu hingga skala institusi pendidikan 
+            yang lebih besar. Pilih paket yang paling sesuai dengan kebutuhan Anda saat ini. Anda dapat meningkatkan paket kapan saja, 
+            untuk mendapatkan akses ke fitur-fitur analisis yang lebih mendalam.
+        </p>
+    </div>
+
+    <section style="padding: 80px 10%; text-align: center;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            <div class="card">
+                <h3 class="pricing-title">Kuisia FREE</h3>
+                <h2 class="pricing-price">Rp 0</h2>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check" style="color: green;"></i> 5 Kuis per bulan</li>
+                    <li><i class="fas fa-check" style="color: green;"></i> Maks 20 Peserta</li>
+                </ul>
+                <button class="btn-primary" onclick="window.location.href='login.html'">Pilih</button>
+            </div>
+            <div class="card">
+                <h3 class="pricing-title">Kuisia PRO</h3>
+                <h2 class="pricing-price">Rp 50K</h2>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check" style="color: green;"></i> Kuis tanpa batas</li>
+                    <li><i class="fas fa-check" style="color: green;"></i> Peserta tanpa batas</li>
+                    <li><i class="fas fa-check" style="color: green;"></i> Statistik Lengkap Pengguna</li>
+                </ul>
+                <button class="btn-primary" onclick="openModal('Pro', 'Isi data di bawah ini untuk mengaktifkan paket Pro Anda sekarang.!')">Berlangganan</button>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+   <div id="pricing-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">Upgrade ke Paket Pro</h2>
+            <p id="modal-desc" style="margin: 15px 0; font-size: 0.9rem; color: #666;"></p>
+            
+            <form id="pro-form" style="text-align: left;">
+                <input type="text" id="user-name" placeholder="Nama Lengkap" required style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="number" id="user-wa" placeholder="Nomor WhatsApp" required style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                
+                <label style="font-weight: bold; font-size: 0.9rem;">Metode Pembayaran:</label>
+                <select id="payment-method" style="width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 20px; border-radius: 8px;">
+                    <option value="qris">QRIS (OVO/Gopay/Dana/Shopee)</option>
+                    <option value="va">Virtual Account Bank</option>
+                </select>
+
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">Dapatkan Akses Sekarang</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('pricing-modal');
+        const closeBtn = document.querySelector('.close-btn');
+        const proForm = document.getElementById('pro-form');
+
+        function openModal(title, desc) {
+            document.getElementById('modal-title').innerText = "Upgrade ke Paket" +title;
+            document.getElementById('modal-desc').innerText = desc;
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = () => modal.style.display = 'none';
+        window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
+
+        proForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = proForm.querySelector('button[type="submit"]');
+
+            // --- TAMBAHKAN BARIS INI ---
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<span class="spinner"></span> Memproses...';
+            // ---------------------------
+
+            const nama = document.getElementById('user-name').value;
+            const wa = document.getElementById('user-wa').value;
+            const metode = document.getElementById('payment-method').value;
+
+            setTimeout(() => {
+                const message = `Halo, saya ${nama}. Saya ingin berlangganan Paket Pro via ${metode}. Nomor WA saya: ${wa}`;
+                const waUrl = `https://wa.me/628123456789?text=${encodeURIComponent(message)}`;
+                
+                window.open(waUrl, '_blank');
+                
+                // Reset tombol
+                modal.style.display = 'none';
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.innerHTML = 'Dapatkan Akses Sekarang';
+            }, 1500); 
+        });
+
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('nav-overlay');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
+
+</body>
+</html>

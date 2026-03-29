@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulai Kuis - Kuisia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css"> 
+    <style>
+        .quiz-container { max-width: 700px; margin: 50px auto; padding: 20px; }
+        
+        /* Perbaikan: Gunakan box-shadow */
+        .question-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-pro); 
+        }
+
+        .option-btn { 
+            display: block; width: 100%; padding: 15px; margin-bottom: 12px; 
+            border: 2px solid #eef0f7; border-radius: 12px; background: none;
+            text-align: left; cursor: pointer; transition: 0.3s; font-family: inherit;
+            font-size: 1rem; color: var(--text);
+        }
+
+        .option-btn:hover { border-color: var(--accent); background: #f9f5ff; }
+        .option-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .progress-bar { height: 8px; background: #eef0f7; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
+
+        /* Style untuk input nama agar senada dengan dashboard */
+        .input-modern {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #eef0f7;
+            border-radius: 10px;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 20px;
+        }
+        .input-modern:focus { border-color: var(--accent); }
+
+        .hidden { display: none !important; }
+
+        /* Warna untuk jawaban benar */
+        .correct-flash {
+            background-color: #4CAF50 !important; /* Hijau */
+            color: white !important;
+            border-color: #4CAF50 !important;
+            transition: 0.2s;
+        }
+
+        /* Warna untuk jawaban salah */
+        .wrong-flash {
+            background-color: #f44336 !important; /* Merah */
+            color: white !important;
+            border-color: #f44336 !important;
+            animation: shake 0.4s; /* Efek getar */
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #eef0f7;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent); /* Warna ungu Anda */
+            width: 0%; /* Mulai dari 0 */
+            transition: width 0.5s ease-in-out; /* INI YANG MEMBUAT ANIMASI HALUS */
+        }
+
+        /* Animasi getar untuk jawaban salah */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Container untuk daftar peringkat */
+        #leaderboard-list {
+            max-height: 350px; /* Batasi tinggi awal */
+            overflow: hidden; /* Sembunyikan sisanya */
+            transition: max-height 0.5s ease;
+            position: relative;
+        }
+
+        /* Kondisi saat diperluas */
+        #leaderboard-list.expanded {
+            max-height: 2000px; /* Tinggi yang cukup untuk 50 siswa */
+            overflow-y: auto;
+        }
+
+        /* Efek Blur Psikologis untuk peringkat di bawah 5 */
+        .blur-item {
+            filter: blur(4px);
+            opacity: 0.6;
+            transition: filter 0.3s, opacity 0.3s;
+            pointer-events: none; /* Siswa tidak bisa berinteraksi sebelum dibuka */
+        }
+
+        /* Hilangkan blur saat tombol 'Lihat Semua' ditekan */
+        .expanded .blur-item {
+            filter: blur(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Tombol Lihat Semua */
+        .btn-toggle {
+            background: none;
+            border: none;
+            color: #DDBDF4;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #pass-input-siswa:focus {
+            border-color: var(--accent) !important;
+            background-color: #fff;
+        }
+
+        .badge-hots {
+        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);
+        animation: pulse-hots 2s infinite;
+    }
+
+    @keyframes pulse-hots {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    </style>
+
+</head>
+
+<body style="background: var(--bg-admin);">
+
+    <div class="quiz-container">
+        <h1 id="quiz-title-display" style="text-align: center; color: var(--accent); margin-bottom: 20px;">Memuat Kuis...</h1>
+
+        <div id="setup-container" class="question-card">
+            <div id="wait-thumbnail-container" style="margin-bottom: 20px;">
+                <img id="wait-thumbnail" src="default-thumb.jpg" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 15px; display: none;">
+            </div>
+            
+            <h2 id="wait-quiz-title" style="margin-bottom: 10px;">Siap dimulai?</h2>
+            <p id="wait-quiz-desc" style="color: #666; margin-bottom: 25px;">Siapkan diri Anda untuk mengerjakan kuis ini.</p>
+
+            <div id="avatar-box" style="margin-bottom: 25px; display: none; text-align: left;">
+                <label style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">Pilih Karakter Anda</label>
+                <div id="avatar-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; background: #f9faff; padding: 12px; border-radius: 15px;">
+                    </div>
+            </div>
+
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">Nama Lengkap</label>
+                <input type="text" id="player-name" placeholder="Ketik nama Anda..." class="input-modern">
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex: 2;">
+                        <label style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">Kelas</label>
+                        <input type="text" id="player-class" placeholder="Contoh: 10 IPA 1" class="input-modern">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">No. Absen</label>
+                        <input type="number" id="player-no" placeholder="00" class="input-modern">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startQuiz()" class="btn-primary" style="width: 100%;">Lanjut ke Aturan</button>
+        </div>
+
+        <div id="modal-rules" class="question-card hidden" style="text-align: center;">
+            <h3 style="font-weight: 800;">SYARAT DAN KETENTUAN</h3>
+            
+            <div id="waiting-room-area" style="display: none; margin-top: 20px;">
+                <div id="countdown-wrapper" style="margin-bottom: 25px; padding: 20px; background: #fff4f4; border-radius: 20px; border: 2px dashed var(--accent);">
+                    <p id="countdown-label" style="font-size: 0.9rem; color: #666; margin-bottom: 5px; font-weight: 600;">Kuis dimulai dalam:</p>
+                    <div id="waiting-countdown" style="font-size: 3.5rem; font-weight: 900; color: var(--accent); line-height: 1;">00:00</div>
+                </div>
+
+                <div id="deadline-wrapper" style="display:none; margin-bottom: 25px; padding: 20px; background: #fef2f2; border-radius: 20px; border: 2px dashed #e11d48;">
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 5px; font-weight: 600;">Batas Akhir Pengerjaan:</p>
+                    <div id="wait-deadline-info" style="font-size: 1.2rem; font-weight: 800; color: #e11d48; line-height: 1.4;">
+                        </div>
+                </div>
+
+                <p style="font-weight: 700; font-size: 0.9rem; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                    <i class="fas fa-users"></i> Pemain Bergabung:
+                </p>
+                <div id="player-list-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; min-height: 80px; background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0;">
+                </div>
+            </div>
+
+            <div style="text-align: left; margin: 25px 0; background: #f9faff; padding: 20px; border-radius: 15px;">
+                <p id="rule-timer" style="margin-bottom: 10px;"><i class="fas fa-clock" style="color: var(--accent);"></i> 15 detik per soal.</p>
+                <p style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--accent);"></i> Pilih jawaban yang paling tepat.</p>
+                <p><i class="fas fa-bolt" style="color: var(--accent);"></i> Kecepatan pengerjaan dicatat untuk Leaderboard!</p>
+            </div>
+
+            <button id="btn-start-manual" onclick="realStart()" class="btn-primary" style="width: 100%;">Saya Mengerti, Mulai!</button>
+        </div>
+
+        <div id="review-dashboard" class="question-card hidden">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 5px;"><i class="fas fa-history"></i> Dashboard Review</h3>
+                <p style="font-size: 0.9rem; color: #666;">Gunakan sisa waktu kamu untuk mengecek kembali jawaban.</p>
+                <h1 id="review-timer" style="color: #444444; font-size: 2.5rem; margin: 10px 0;">00:00</h1>
+            </div>
+
+            <div id="review-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 25px;">
+            </div>
+
+            <button onclick="finishQuiz()" class="btn-primary" style="width: 100%; background: #27ae60; border: none; padding: 15px; font-weight: bold;">
+                <i class="fas fa-paper-plane"></i> SELESAI & KIRIM JAWABAN
+            </button>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar" style="width: 100%; height: 10px; background: #eee; border-radius: 5px; margin-bottom: 20px; overflow: hidden;">
+                <div id="progress-fill" class="progress-fill" style="width: 0%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
+            </div>
+            <div id="timer-box" style="margin-bottom: 15px; font-weight: 600; color: var(--accent); text-align: center;">
+                Sisa Waktu: <span id="timer-display">60</span> detik
+            </div>   
+            
+            <div class="question-card">
+                <p id="q-number" style="color: var(--accent); font-weight: 600; margin-bottom: 10px;"></p>
+                <h3 id="q-text" style="margin-bottom: 30px;">Memuat soal...</h3>
+                <div id="options-container"></div>
+            </div>
+        </div>
+
+        <div id="result-area" class="question-card hidden" style="text-align: center;">
+            <i class="fas fa-trophy" style="font-size: 50px; color: #FFD700; margin-bottom: 20px;"></i>
+            <h2>Kuis Selesai!</h2>
+            <h1 id="final-score" style="font-size: 4rem; color: var(--accent); margin: 10px 0;">0</h1>
+            <p id="player-summary"></p>
+            
+            <div id="leaderboard-section" class="hidden" style="margin-top: 30px; text-align: left; border-top: 2px dashed #eee; padding-top: 20px;">
+                <h3 style="text-align: center; margin-bottom: 15px;">🏆 Top 5 Leaderboard</h3>
+                <div id="leaderboard-list"></div>
+            </div>
+
+            <button id="btn-leaderboard" onclick="showLeaderboard()" class="btn-primary" style="width: 100%; margin-top: 20px;">Lihat Leaderboard</button>
+            <button onclick="backToHome()" class="btn-secondary" style="width: 100%; margin-top: 10px; background: none; border: none; color: #666; cursor: pointer;">Kembali ke Beranda</button>
+        </div>
+
+    </div>
+
+    <div id="modal-gate-siswa" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+        <div class="gate-card" style="background: white; width: 100%; max-width: 400px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-top: 6px solid var(--accent); animation: slideUp 0.4s ease;">
+            
+            <div id="gate-icon-area" style="margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; background: #fdf2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="fas fa-lock" style="font-size: 2rem; color: var(--accent);"></i>
+                </div>
+            </div>
+
+            <h2 id="gate-title" style="font-size: 1.5rem; margin-bottom: 10px; color: #333;">Kuis Terkunci</h2>
+            <p id="gate-msg" style="color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px;">Masukkan sandi untuk mengakses kuis ini.</p>
+            
+            <div id="gate-input-area">
+                <input type="text" id="pass-input-siswa" 
+                autocomplete="off" 
+                spellcheck="false" 
+                placeholder="Ketik Sandi di sini..." 
+                    style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #eee; text-align: center; font-size: 1rem; margin-bottom: 15px; outline: none; transition: border-color 0.3s;">
+                
+                <button onclick="prosesVerifikasiSandi()" class="btn-primary" 
+                    style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; border: none; background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    Buka Akses Kuis
+                </button>
+            </div>
+            
+            <button onclick="window.location.href='index.html'" 
+                style="margin-top: 20px; background: none; border: none; color: #999; cursor: pointer; font-size: 0.9rem; font-weight: 500;">
+                <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+            </button>
+        </div>
+    </div>
+
+    
+    
+
+    <audio id="sound-correct" src="Yess.mp3"></audio>
+    <audio id="sound-wrong" src="Noo.mp3"></audio>
+
+    <audio id="sound-essay-save" src="Aha.mp3"></audio>
+
+    <audio id="sound-result-excellent" src="score win.mp3"></audio> 
+    <audio id="sound-result-good" src="try again.mp3"></audio> 
+    <audio id="sound-result-poor" src="score bellow.mp3"></audio> 
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="kuis-script.js"></script>
+</body>
+</html>

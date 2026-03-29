@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Mengubah max-width dari 800px menjadi 640px (80% dari 800px) */
+        .faq-container { 
+            max-width: 640px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+        }
+        
+        .faq-item { border-bottom: 1px solid #eee; margin-bottom: 10px; }
+        
+        .faq-question { 
+            width: 100%; 
+            padding: 20px; 
+            background: none; 
+            border: none; 
+            text-align: left; 
+            font-weight: 600;
+            font-size: 18px; 
+            color: #8458B3;
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; /* Menjaga agar ikon + sejajar secara vertikal */
+        }
+        
+        .faq-answer { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: 0.3s; 
+            padding: 0 20px; 
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <div style="padding: 40px 10% 0 10%; text-align: center; max-width: 1400px; margin: 0 auto;">
+        <h1 style="color: var(--accent); margin-bottom: 20px;">Pusat Bantuan Kuisia</h1>
+        <p style="color: var(--text); line-height: 1.6; margin-bottom: 15px;">
+            Selamat datang di pusat bantuan Kuisia. Kami telah mengumpulkan jawaban dari pertanyaan-pertanyaan yang paling sering diajukan oleh pengguna kami untuk membantu Anda mendapatkan pengalaman terbaik.
+        </p>
+        <p style="color: var(--text); line-height: 1.6;">
+            Jika Anda tidak menemukan jawaban yang Anda cari dalam daftar di bawah, jangan ragu untuk menghubungi tim dukungan kami melalui kontak yang tersedia di bagian footer. Kami siap membantu Anda setiap saat.
+        </p>
+    </div>
+
+    <main style="flex: 1;">
+        <div class="faq-container">
+            <h1 style="text-align: center;">Pertanyaan Umum</h1>
+            <div class="faq-item">
+                <button class="faq-question">Apa itu Kuisia? <span>+</span></button>
+                <div class="faq-answer"><p>Platform kuis interaktif untuk belajar dengan seru.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Bagaimana cara berlangganan? <span>+</span></button>
+                <div class="faq-answer"><p>Anda bisa memilih paket Pro di halaman Pricing.</p></div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const answer = btn.nextElementSibling;
+                answer.style.maxHeight = answer.style.maxHeight ? null : answer.scrollHeight + "px";
+            });
+        });
+
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('nav-overlay');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

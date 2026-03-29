@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Control - Kuisia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="master-style.css">
+</head>
+<body>
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="master-sidebar" id="master-sidebar">
+        <div class="sidebar-header">
+            <h2 style="color: var(--master-gold);"><i class="fas fa-crown"></i> Master</h2>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active"><a href="#"><i class="fas fa-users"></i> Manajemen User</a></li>
+                <li><a href="#"><i class="fas fa-ad"></i> Manajemen Iklan</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-migrasi" onclick="jalankanMigrasiConfig()">
+                <i class="fas fa-tools"></i> Jalankan Migrasi
+            </button>
+            
+            <a href="admin.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+            </a>
+        </div>
+    </aside>
+
+    <main class="master-content">
+        <header class="mobile-header">
+            <button style="cursor: pointer;" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <span>Master Control</span>
+            <div style="width: 40px;"></div>
+        </header>
+
+        <div class="master-container">
+            <header class="content-header">
+                <h1>Ringkasan Sistem</h1>
+                <p>Kelola akses dan otoritas author kuisia.</p>
+            </header>
+            
+            <section class="master-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-user-shield"></i> Daftar Author Aktif</h3>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th>Author</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Expired</th>
+                                <th>Opsi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-list-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal-premium" class="master-modal">
+        <div class="master-modal-content">
+            <div class="master-modal-header">
+                <h2>Atur Akses Premium</h2>
+                <button class="close-btn" onclick="closeMasterModal()">&times;</button>
+            </div>
+            <div class="master-modal-body">
+                <input type="hidden" id="target-uid">
+                
+                <div class="master-form-group">
+                    <label>Status Member</label>
+                    <select id="select-status">
+                        <option value="false">Free Member</option>
+                        <option value="true">Premium Member 💎</option>
+                    </select>
+                </div>
+
+                <div class="master-form-group">
+                    <label>Tanggal Berakhir</label>
+                    <input type="date" id="input-expiry">
+                </div>
+
+                <button class="btn-save" onclick="savePremiumSettings()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="master-script.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('master-sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
