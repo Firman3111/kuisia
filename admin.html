@@ -335,6 +335,62 @@
 
     </div>
 
+    <!--MODAL EDIT SOAL-->
+
+    <div id="modal-edit-soal-simple" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(73, 77, 95, 0.6); overflow-y:auto; padding:20px; backdrop-filter: blur(4px);">
+        <div style="background:#ffffff; margin:2% auto; padding:25px; border-radius:20px; width:95%; max-width:500px; box-shadow: var(--shadow-pro); position:relative; font-family: 'Poppins', sans-serif; border: 1px solid var(--accent-light);">
+            
+            <h3 style="margin-top:0; color:var(--accent); display:flex; align-items:center; gap:10px; font-size: 1.2rem;">
+                <i class="fas fa-edit"></i> Edit Soal
+            </h3>
+            <hr style="border:0; border-top:1px solid var(--bg-admin); margin:15px 0;">
+            
+            <label style="display:block; font-weight:600; margin-bottom:8px; color:var(--text); font-size:0.85rem;">Pertanyaan:</label>
+            <textarea id="edit-simple-pertanyaan" style="width:100%; height:100px; padding:12px; border-radius:12px; border:1.5px solid var(--bg-admin); font-family:inherit; margin-bottom:20px; outline:none; color:var(--text); resize: none; background: #f9faff;"></textarea>
+
+            <div id="area-edit-pg" style="display:none;">
+                <label style="display:block; font-weight:600; margin-bottom:10px; color:var(--text); font-size:0.85rem;">Pilihan Jawaban:</label>
+                
+                <div style="display:flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:var(--accent-light); width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:var(--accent);">A</span>
+                        <input type="text" id="edit-opt-0" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--bg-admin); color:var(--text); outline:none;">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:var(--accent-light); width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:var(--accent);">B</span>
+                        <input type="text" id="edit-opt-1" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--bg-admin); color:var(--text); outline:none;">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:var(--accent-light); width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:var(--accent);">C</span>
+                        <input type="text" id="edit-opt-2" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--bg-admin); color:var(--text); outline:none;">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:var(--accent-light); width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:var(--accent);">D</span>
+                        <input type="text" id="edit-opt-3" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--bg-admin); color:var(--text); outline:none;">
+                    </div>
+                </div>
+
+                <label style="display:block; font-weight:600; margin-bottom:8px; color:var(--text); font-size:0.85rem;">Jawaban Benar:</label>
+                <select id="edit-simple-kunci-pg" style="width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--bg-admin); margin-bottom:20px; background:#fff; color:var(--text); outline:none;">
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                    <option value="2">C</option>
+                    <option value="3">D</option>
+                </select>
+            </div>
+
+            <div id="area-edit-essay" style="display:none;">
+                <label style="display:block; font-weight:600; margin-bottom:8px; color:var(--text); font-size:0.85rem;">Kunci Jawaban Essay:</label>
+                <textarea id="edit-simple-kunci-essay" style="width:100%; height:80px; padding:12px; border-radius:12px; border:1.5px solid var(--bg-admin); font-family:inherit; margin-bottom:20px; outline:none; resize: none; color:var(--text);"></textarea>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button onclick="tutupModalEditSimple()" style="flex:1; padding:14px; border-radius:12px; border:none; background:var(--bg-admin); color:var(--text); cursor:pointer; font-weight:600; transition: 0.2s;">Batal</button>
+                <button onclick="simpanPerubahanSoalSimple()" style="flex:1; padding:14px; border-radius:12px; border:none; background:var(--accent); color:white; cursor:pointer; font-weight:600; box-shadow: var(--shadow-sm); transition: 0.2s;">Update Soal</button>
+            </div>
+        </div>
+    </div>
+
     <!--MODAL KUIS-->
 
     <div id="modal-kuis" class="modal">

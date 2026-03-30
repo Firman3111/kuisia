@@ -155,6 +155,134 @@
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
+
+    /* Penanda tombol yang sudah dipilih saat review */
+    /* Container untuk barisan nomor soal */
+    #quiz-pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 30px;
+        padding: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    /* Style tombol nomor secara umum */
+    /* Style Dasar Tombol Navigasi (Belum Dijawab) */
+    .nav-btn {
+        width: 38px; /* Sedikit lebih besar agar nyaman di jari */
+        height: 38px;
+        border-radius: 12px; /* Kotak rounded agar senada dengan card soal */
+        border: 2px solid #eef0f7;
+        background: #f8f9fa; /* Abu-abu sangat muda */
+        color: #a0aec0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Style saat soal sedang dibuka (Active) - Warna Kuning/Orange Cerah */
+    .nav-btn.active {
+        background: #FFD700; /* Gold/Kuning Cerah */
+        color: #855d00;
+        transform: scale(1.15);
+        box-shadow: 0 3px 3px rgba(126, 126, 126, 0.2);
+        z-index: 2;
+    }
+
+    /* Style jika soal sudah dijawab - Warna Hijau Segar */
+    .nav-btn.answered {
+        background: #2DCE89; /* Hijau Emerald khas web modern */
+        color: white;
+        border-color: #2DCE89;
+    }
+
+    /* Efek Hover untuk tombol yang belum aktif */
+    .nav-btn:hover:not(.active) {
+        border-color: #8458B3;
+        color: #8458B3;
+        background: #f3ebff;
+    }
+
+    /* Floating Timer - Muncul di pojok kanan atas soal */
+    #global-review-info {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: #c53030; /* Merah tegas */
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(197, 48, 48, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    /* Animasi berkedip saat waktu kritis (di bawah 1 menit) */
+    .timer-critical {
+        animation: blinker 1s linear infinite;
+    }
+
+    @keyframes blinker {
+        50% { opacity: 0.5; }
+    }
+
+    /* Animasi halus saat tombol diklik */
+    .option-btn {
+        transition: all 0.2s ease;
+    }
+
+    .option-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Penanda di navigasi bawah untuk soal yang sudah diisi */
+    .nav-btn.answered {
+        background: #f3ebff !important;
+        color: #8458B3 !important;
+        border: 1px solid #8458B3 !important;
+    }
+
+    /* Responsif untuk HP */
+    /* Responsif untuk HP - Pojok Kanan Atas */
+    @media (max-width: 600px) {
+        #global-review-info {
+            /* Reset posisi bawah agar tidak ketarik */
+            bottom: auto !important; 
+            
+            /* Tempelkan di kanan atas */
+            top: 10px !important; 
+            right: 10px !important;
+            
+            /* Ukuran lebih mungil agar tidak makan tempat */
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            gap: 5px;
+            
+            /* Pastikan lebar tidak memenuhi layar */
+            width: fit-content;
+            max-width: 150px; 
+            
+            /* Tambahkan sedikit transparansi agar teks di bawahnya (jika ada) masih agak terlihat */
+            background: rgba(197, 48, 48, 0.9); 
+        }
+
+        .question-card {
+            padding-top: 40px; /* Memberi ruang agar soal tidak tertutup timer melayang */
+        }
+    }
+    
     </style>
 
 </head>
@@ -243,6 +371,11 @@
             </button>
         </div>
 
+        <div id="global-review-info" class="hidden" style="position: fixed; top: 20px; right: 20px; z-index: 9999; background: #c53030; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; box-shadow: 0 4px 15px rgba(197, 48, 48, 0.4); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-clock"></i>
+            <span id="review-timer-floating">00:00</span>
+        </div>
+
         <div id="quiz-area" class="hidden">
             <div class="progress-bar" style="width: 100%; height: 10px; background: #eee; border-radius: 5px; margin-bottom: 20px; overflow: hidden;">
                 <div id="progress-fill" class="progress-fill" style="width: 0%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
@@ -255,6 +388,7 @@
                 <p id="q-number" style="color: var(--accent); font-weight: 600; margin-bottom: 10px;"></p>
                 <h3 id="q-text" style="margin-bottom: 30px;">Memuat soal...</h3>
                 <div id="options-container"></div>
+                <div id="quiz-pagination" style="margin-top: 25px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;"></div>
             </div>
         </div>
 

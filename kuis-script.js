@@ -298,7 +298,6 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// 3. MODIFIKASI: realStart (Menandai kuis dimulai)
 // 3. MODIFIKASI: realStart (Menandai kuis dimulai & Inisialisasi Bank Waktu)
 function realStart() {
     if (!questions || questions.length === 0) {
@@ -349,80 +348,117 @@ window.realStart = realStart;
 // PERBAIKAN: Nama fungsi disamakan dan pengecekan properti soal
 function showQuestion() {
     if (currentQuestionIndex < questions.length) {
+        // 1. UPDATE PROGRESS BAR
         const progress = (currentQuestionIndex / questions.length) * 100;
         const progressFill = document.getElementById('progress-fill');
         if(progressFill) progressFill.style.width = `${progress}%`;
 
         const q = questions[currentQuestionIndex];
+        const dataLama = userAnswersLog[currentQuestionIndex];
         
+        // 2. UPDATE INFO NOMOR & TEKS SOAL
         const qNumberEl = document.getElementById('q-number');
         if(qNumberEl) qNumberEl.innerText = `Soal ${currentQuestionIndex + 1} dari ${questions.length}`;
-        
+
         const qTextEl = document.getElementById('q-text');
-        if(qTextEl) qTextEl.innerText = q.text || q.question || "Soal tidak ditemukan";
-        // TAMBAHKAN BADGE HOTS JIKA ADA
+        if(qTextEl) {
+            // Gunakan innerHTML karena data dari Admin (Quill) berbentuk HTML
+            let content = q.question || q.text || "Soal tidak ditemukan";
+            
+            // Tambahkan badge HOTS jika ada
             if (q.isHots || q.tipe_soal === "HOTS") {
-                qTextEl.innerHTML = `<span class="badge-hots"><i class="fas fa-fire"></i> SOAL TANTANGAN (HOTS)</span><br>${qTextEl.innerText}`;
-            }    
-        
+                content = `<span class="badge-hots"><i class="fas fa-fire"></i> SOAL TANTANGAN (HOTS)</span><br>${content}`;
+            }
+            qTextEl.innerHTML = content;
+        }
+
         const container = document.getElementById('options-container');
         container.innerHTML = '';
 
         const isEssay = (quizDataGlobal && quizDataGlobal.quizType === 'essay') || q.type === 'essay';
 
+        // 3. RENDER INPUT BERDASARKAN TIPE (ESSAY / PG)
         if (isEssay) {
             const essayWrapper = document.createElement('div');
             essayWrapper.style.width = '100%';
+
+            // Ambil jawaban lama dari log jika user navigasi balik
+            const teksLama = dataLama ? dataLama.jawabanUser : "";
+
             essayWrapper.innerHTML = `
-                <textarea id="answer-essay" placeholder="Ketik jawaban kamu di sini..." style="width:100%; min-height:150px; padding:15px; border:2px solid #ddd; border-radius:12px; font-family:inherit; font-size:1rem; outline:none; transition:border-color 0.3s; margin-bottom: 20px;"></textarea>
-                <button class="option-btn" id="submit-essay-btn" style="background:#8458B3; color:white; width:100%;" onclick="handleEssayAnswer()">Simpan Jawaban & Lanjut</button>
+                <textarea id="answer-essay" placeholder="Ketik jawaban kamu di sini..." 
+                    style="width:100%; min-height:150px; padding:15px; border:2px solid #eef0f7; border-radius:12px; font-family:inherit; font-size:1rem; outline:none; transition:0.3s; margin-bottom: 20px;">${teksLama}</textarea>
+                <button class="option-btn" id="submit-essay-btn" 
+                    style="background:#8458B3; color:white; width:100%; font-weight:600;" 
+                    onclick="handleEssayAnswer()">Simpan Jawaban & Lanjut</button>
             `;
             container.appendChild(essayWrapper);
+
         } else {
+            // RENDERING PILIHAN GANDA (PG)
             const options = q.options || [];
+            const labelOpsi = ["A", "B", "C", "D", "E"];
+
             options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.innerText = opt;
+                btn.id = `opt-${index}`;
+                btn.innerHTML = `
+                    <span class="option-label">${labelOpsi[index]}</span>
+                    <span class="option-text">${opt}</span>
+                `;
+
+                // --- LOGIKA "SUDAH TERPILIH" (NETRAL) ---
+                // Cek apakah index ini sesuai dengan index yang pernah disimpan di log
+                if (dataLama && dataLama.indexJawabanUser === index) {
+                    btn.style.background = "#8458B3"; // Ungu Zingquis
+                    btn.style.color = "white";
+                    btn.style.borderColor = "#8458B3";
+                    btn.classList.add('selected');
+                }
+
                 btn.onclick = () => handleAnswer(index);
                 container.appendChild(btn);
             });
         }
-        
-        // --- LOGIKA PENYEMBUNYIAN TIMER-BOX & INFO DEADLINE LENGKAP ---
-        const timerBox = document.getElementById('timer-box');
 
+        // 4. UPDATE NAVIGASI BAWAH (PAGINATION)
+        if (typeof updatePagination === 'function') updatePagination();
+
+        // 5. LOGIKA TIMER & DEADLINE
+        const timerBox = document.getElementById('timer-box');
+        
         if (quizDurationMode === 'timer') {
             if (timerBox) {
                 timerBox.style.display = 'block';
-                timerBox.innerHTML = `Sisa Waktu: <span id="timer-display">${quizDurationValue}</span> detik`;
-                timerBox.style.background = "transparent";
-                timerBox.style.color = "var(--accent)";
+                
+                // Mode Review (Jika user kembali ke soal yang sudah dijawab)
+                if (typeof isReviewPhase !== 'undefined' && isReviewPhase) {
+                    timerBox.innerHTML = `<span style="color: #8458B3;"><i class="fas fa-clock"></i> Sisa Waktu Review: <span id="review-timer-floating"></span></span>`;
+                    timerBox.style.background = "#f3ebff";
+                    timerBox.style.padding = "8px 15px";
+                    timerBox.style.borderRadius = "10px";
+                    clearInterval(timerInterval); 
+                } else {
+                    // Mode Kuis Normal
+                    timerBox.innerHTML = `<i class="fas fa-hourglass-half"></i> Sisa Waktu: <span id="timer-display">${quizDurationValue}</span> detik`;
+                    timerBox.style.background = "transparent";
+                    timerBox.style.color = "var(--accent)";
+                    startTimer(); 
+                }
             }
-            startTimer(); 
         } else {
+            // Logika Deadline Tanggal
             if (quizDataGlobal && quizDataGlobal.deadline) {
                 const d = new Date(quizDataGlobal.deadline);
-                
-                // Format Lengkap: Hari, Tanggal Bulan Tahun jam:menit
                 const formatLengkap = d.toLocaleDateString('id-ID', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
                 });
                 
                 if (timerBox) {
                     timerBox.style.display = 'block';
-                    // Menampilkan format: Senin, 1 Januari 2024 pukul 23:59
-                    timerBox.innerHTML = `<i class="fas fa-calendar-alt"></i> Batas Akhir: ${formatLengkap}`;
-                    timerBox.style.background = "#f8f9fa";
-                    timerBox.style.padding = "8px";
-                    timerBox.style.borderRadius = "8px";
+                    timerBox.innerHTML = `<i class="fas fa-calendar-alt"></i> Batas: ${formatLengkap}`;
                     timerBox.style.fontSize = "0.85rem";
-                    timerBox.style.lineHeight = "1.4";
                 }
             } else {
                 if (timerBox) timerBox.style.display = 'none';
@@ -431,6 +467,7 @@ function showQuestion() {
         }
 
     } else {
+        // Jika soal habis
         const progressFill = document.getElementById('progress-fill');
         if(progressFill) progressFill.style.width = `100%`;
         finishQuiz();
@@ -441,73 +478,67 @@ function handleAnswer(selectedIndex) {
     clearInterval(timerInterval);
     const q = questions[currentQuestionIndex];
     const buttons = document.querySelectorAll('.option-btn');
+    
     buttons.forEach(b => b.style.pointerEvents = 'none');
 
-    // --- [TAMBAHAN: LOGIKA HITUNG WAKTU TERPAKAI] ---
-    const durasiSet = parseFloat(window.currentConfig.durasiSoal) || 60;
-    // Hitung berapa detik yang dihabiskan untuk soal ini
-    // timeLeft adalah sisa detik yang berjalan di UI
+    const durasiSet = parseFloat(window.currentConfig?.durasiSoal) || 60;
     const detikTerpakai = durasiSet - timeLeft; 
     timeUsedAccumulated += detikTerpakai; 
-    // ------------------------------------------------
 
-    // Ambil nilai dari config (Gunakan default jika admin tidak set)
-    const pointsPerBenar = parseFloat(window.currentConfig.pgPoin) || 0;
-    const pointsBonusHots = parseFloat(window.currentConfig.bonusHots) || 0;
-
-    if (q.options) {
-        if (selectedIndex !== null) {
-            if (selectedIndex === q.answer) {
-                // --- LOGIKA SKOR DINAMIS ---
-                let poinDidapat = pointsPerBenar;
-                
-                if (q.isHots || q.tipe_soal === "HOTS") {
-                    poinDidapat += pointsBonusHots;
-                    console.log("Mantap! Bonus HOTS didapat:", pointsBonusHots);
-                }
-
-                score += poinDidapat;
-                // ---------------------------
-
-                if(buttons[selectedIndex]) buttons[selectedIndex].classList.add('correct-flash');
-                try { document.getElementById('sound-correct').play(); } catch(e){}
-            } else {
-                if(buttons[selectedIndex]) buttons[selectedIndex].classList.add('wrong-flash');
-                if(buttons[q.answer]) buttons[q.answer].classList.add('correct-flash');
-                try { document.getElementById('sound-wrong').play(); } catch(e){}
-            }
-        } else {
-            if(buttons[q.answer]) buttons[q.answer].classList.add('correct-flash');
-        }
+    if (userAnswersLog[currentQuestionIndex]) {
+        score -= (userAnswersLog[currentQuestionIndex].poin || 0);
     }
 
-    // --- [MODIFIKASI: CATAT DATA UNTUK LOG REVIEW & DB] ---
-    const labelOpsi = ["A", "B", "C", "D"];
-    const jawabanTeks = (selectedIndex !== null) ? `${labelOpsi[selectedIndex] || '?'}. ${q.options[selectedIndex]}` : "Waktu Habis";
+    const pointsPerBenar = parseFloat(window.currentConfig?.pgPoin) || 0;
+    const pointsBonusHots = parseFloat(window.currentConfig?.bonusHots) || 0;
+
+    let poinDidapat = 0;
+    let isCorrect = false;
+
+    if (selectedIndex !== null && selectedIndex === q.answer) {
+        isCorrect = true;
+        poinDidapat = pointsPerBenar + (q.isHots ? pointsBonusHots : 0);
+        score += poinDidapat;
+    }
+
+    // --- MODIFIKASI: EFEK VISUAL NETRAL ---
+    if (selectedIndex !== null && buttons[selectedIndex]) {
+        // Beri warna Ungu (Branding) sebagai tanda "Sudah Dipilih"
+        buttons[selectedIndex].style.background = "#8458B3";
+        buttons[selectedIndex].style.color = "white";
+        buttons[selectedIndex].style.borderColor = "#8458B3";
+        
+        // Getar halus tetap ada sebagai feedback input
+        if (navigator.vibrate) navigator.vibrate(50);
+    }
+
+    // Catat log (Tetap simpan status Benar/Salah untuk Review nanti)
+    const labelOpsi = ["A", "B", "C", "D", "E"];
+    const teksJawabanUser = (selectedIndex !== null) ? q.options[selectedIndex] : "Waktu Habis";
     
     const logData = {
-        no: currentQuestionIndex + 1, // Penting untuk Grid Review nanti
+        no: currentQuestionIndex + 1,
         soal: q.question || q.text,
-        jawabanUser: jawabanTeks,
+        jawabanUser: (selectedIndex !== null) ? `${labelOpsi[selectedIndex]}. ${teksJawabanUser}` : "Waktu Habis",
+        indexJawabanUser: selectedIndex, // Simpan index untuk mempermudah render review
+        kunciIndex: q.answer,           // Simpan kunci untuk pembanding di review
         isHots: q.isHots || false,
         type: "pg",
-        status: (selectedIndex === q.answer) ? "Benar" : "Salah"
+        poin: poinDidapat, 
+        status: isCorrect ? "Benar" : (selectedIndex === null ? "Waktu Habis" : "Salah")
     };
 
-    // Update log review dan rekap sekaligus
     userAnswersLog[currentQuestionIndex] = logData; 
-    userEssayAnswers[currentQuestionIndex] = logData;
 
+    // Jeda lebih singkat (500ms) agar kuis terasa cepat/snappy
     setTimeout(() => {
-        // Cek apakah masih ada soal berikutnya
         if (currentQuestionIndex < questions.length - 1) {
             currentQuestionIndex++;
             showQuestion();
         } else {
-            // Jika sudah soal terakhir, jangan langsung finish, tapi ke DASHBOARD REVIEW
             enterReviewPhase(); 
         }
-    }, 1200); 
+    }, 500); 
 }
 
 
@@ -523,48 +554,35 @@ window.handleEssayAnswer = function() {
     clearInterval(timerInterval);
     const q = questions[currentQuestionIndex];
 
-    // --- [TAMBAHAN: LOGIKA HITUNG WAKTU TERPAKAI] ---
     const durasiSet = parseFloat(window.currentConfig.durasiSoal) || 60;
-    const detikTerpakai = durasiSet - timeLeft; 
-    timeUsedAccumulated += detikTerpakai; 
-    // ------------------------------------------------
-    
-    // --- 1. AMBIL KONFIGURASI POIN DARI ADMIN ---
+    const detikTerpakai = durasiSet - timeLeft;
+    timeUsedAccumulated += detikTerpakai;
+
+    if (userAnswersLog[currentQuestionIndex]) {
+        score -= (userAnswersLog[currentQuestionIndex].poin || 0);
+    }   
+
     const pointsEssay = parseFloat(window.currentConfig.essayPoin) || 0;
     const pointsBonusHots = parseFloat(window.currentConfig.bonusHots) || 0;
 
-    // --- 2. LOGIKA VALIDASI FLEKSIBEL (NORMALISASI) ---
+    // Logika validasi (Tetap simpan yang sudah Mas buat)
     const userClean = answerText.toLowerCase().replace(/\s+/g, ' ');
     const officialAnswer = (q.answer || "").toString().toLowerCase().replace(/\s+/g, ' ');
     const validAlternatives = officialAnswer.split(',').map(item => item.trim());
 
     let isCorrect = false;
-
-    // A. Cek kecocokan persis
     if (validAlternatives.includes(userClean)) {
         isCorrect = true;
-    } 
-    // B. Logika Keyword
-    else {
+    } else {
         const keywords = validAlternatives[0].split(' ').filter(word => word.length > 2);
-        const matchAllKeywords = keywords.length > 0 && keywords.every(word => userClean.includes(word));
-        if (matchAllKeywords) {
+        if (keywords.length > 0 && keywords.every(word => userClean.includes(word))) {
             isCorrect = true;
         }
     }
 
-    // --- 3. KALKULASI SKOR DINAMIS ---
-    let poinDidapat = 0;
-    if (isCorrect) {
-        poinDidapat = pointsEssay;
-        if (q.isHots || q.tipe_soal === "HOTS") {
-            poinDidapat += pointsBonusHots;
-            console.log("Essay HOTS Benar! Bonus ditambahkan.");
-        }
-        score += poinDidapat;
-    }
+    let poinDidapat = isCorrect ? (pointsEssay + (q.isHots ? pointsBonusHots : 0)) : 0;
+    if (isCorrect) score += poinDidapat;
 
-    // --- [MODIFIKASI: CATAT DATA UNTUK LOG REVIEW & DB] ---
     const logData = {
         no: currentQuestionIndex + 1,
         soal: q.text || q.question,
@@ -576,29 +594,24 @@ window.handleEssayAnswer = function() {
         status: isCorrect ? "Benar (Otomatis)" : "Perlu Review Guru"
     };
 
-    // Update log review dan rekap sekaligus menggunakan index agar tidak duplikat saat edit
     userAnswersLog[currentQuestionIndex] = logData;
-    userEssayAnswers[currentQuestionIndex] = logData;
 
-    // Efek suara & visual
-    try { document.getElementById('sound-essay-save').play(); } catch(e) {}
+    // Efek visual tombol simpan (Netral/Sukses)
     const btn = document.getElementById('submit-essay-btn');
     if(btn) {
         btn.disabled = true;
-        btn.style.background = "#2ecc71";
-        btn.innerText = "Jawaban Tersimpan...";
+        btn.style.background = "#8458B3"; // Gunakan warna branding
+        btn.innerText = "Tersimpan...";
     }
 
     setTimeout(() => {
-        // --- [MODIFIKASI: CEK ALUR SELANJUTNYA] ---
         if (currentQuestionIndex < questions.length - 1) {
             currentQuestionIndex++;
             showQuestion();
         } else {
-            // Jika soal terakhir, masuk ke DASHBOARD REVIEW (SPION)
-            enterReviewPhase(); 
+            enterReviewPhase();
         }
-    }, 800);
+    }, 600);
 };
 
 // FUNGSI FINISH (SINKRON DENGAN LOGIKA BOBOT ADMIN 100 POIN)
@@ -643,16 +656,38 @@ function finishQuiz() {
         }
     } catch(e) { console.log("Audio play blocked by browser"); }
 
-    // 5. RINGKASAN TEKS
+    // 5. RINGKASAN TEKS & TOMBOL PEMBAHASAN
     let summaryHTML = `Hebat, ${playerName}! Kamu selesai dalam ${duration.toFixed(1)} detik.`;
-    // Kita langsung sebutkan "dari 100" agar konsisten dengan halaman admin
     summaryHTML += `<br>Skor kamu: <b>${finalScore}</b> dari maksimal <b>100</b> poin.`;
+
+    // TAMBAHKAN TOMBOL INI:
+    summaryHTML += `
+    <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+        <button onclick="bukaPembahasan()" class="option-btn" 
+            style="background: #2ecc71; color: white; border: none; width: 100%; font-weight: 600;">
+            <i class="fas fa-book-open"></i> Lihat Pembahasan (Benar/Salah)
+        </button>
+    </div>
     
-    if (quizDataGlobal && (quizDataGlobal.quizType === 'essay' || questions.some(q => q.type === 'essay'))) {
-        summaryHTML += `<br><small style="color: #666; display: block; margin-top: 10px;">
-            *Jawaban essay Anda telah disimpan dan akan ditinjau manual oleh admin.
-        </small>`;
-    }
+    <div id="review-pembahasan-area" class="hidden" style="margin-top: 30px; text-align: left;">
+        <h3 style="color: #8458B3; border-bottom: 2px solid #f3ebff; padding-bottom: 10px;">
+            <i class="fas fa-spell-check"></i> Lembar Pembahasan
+        </h3>
+
+        <div style="display: flex; gap: 10px; margin: 15px 0;">
+            <button onclick="filterReview('all')" id="btn-filter-all" 
+                style="flex:1; padding: 8px; border-radius: 8px; border: 1px solid #8458B3; background: #8458B3; color: white; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+                Semua
+            </button>
+            <button onclick="filterReview('wrong')" id="btn-filter-wrong" 
+                style="flex:1; padding: 8px; border-radius: 8px; border: 1px solid #eee; background: white; color: #666; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+                Hanya Salah
+            </button>
+        </div>
+
+        <div id="review-list-container" style="margin-top: 15px;"></div>
+    </div>
+`;
 
     const playerSummaryEl = document.getElementById('player-summary');
     if (playerSummaryEl) playerSummaryEl.innerHTML = summaryHTML;
@@ -1038,118 +1073,97 @@ function runScheduledCountdown(targetTime) {
 }
 
 // --- FUNGSI DASHBOARD REVIEW (SPION) ---
-
 function enterReviewPhase() {
-    // 1. Matikan timer soal yang sedang berjalan
+    // 1. Matikan timer per soal yang sedang berjalan
     if (timerInterval) clearInterval(timerInterval);
     isReviewPhase = true;
 
-    // 2. Hitung Sisa Bank Waktu: (Kapasitas Total - Waktu yang Sudah Terpakai)
+    // 2. Hitung Sisa Waktu Global (Total dikurangi yang sudah terpakai)
     const reviewTimeLimit = totalAllocatedTime - timeUsedAccumulated;
 
-    // 3. Jika waktu sudah benar-benar habis, langsung finish
     if (reviewTimeLimit <= 0) {
         alert("Waktu pengerjaan telah habis!");
         finishQuiz();
         return;
     }
 
-    // 4. Ganti Tampilan: Sembunyikan Kuis, Munculkan Dashboard
+    // 3. SEMBUNYIKAN Floating Timer (agar tidak dobel tampilan saat di dashboard review)
+    const floatingTimer = document.getElementById('global-review-info');
+    if (floatingTimer) floatingTimer.classList.add('hidden');
+
+    // 4. Jalankan Timer Global "Sisa Waktu"
+    // Fungsi ini akan mengupdate baik 'review-timer' (kotak besar) maupun 'review-timer-floating' (melayang)
+    startGlobalReviewTimer(reviewTimeLimit);
+
+    // 5. Tampilkan Halaman Konfirmasi (Review Dashboard)
     const quizArea = document.getElementById('quiz-area');
-    const reviewArea = document.getElementById('review-dashboard'); // Pastikan ID ini ada di HTML
+    const reviewArea = document.getElementById('review-dashboard'); 
     
     if(quizArea) quizArea.classList.add('hidden');
+    
     if(reviewArea) {
         reviewArea.classList.remove('hidden');
-        renderReviewGrid(); // Gambar kotak-kotak nomor
-        startGlobalReviewTimer(reviewTimeLimit); // Mulai hitung mundur global
+        reviewArea.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <div id="review-timer-container" style="background: #fff5f5; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 2px solid #feb2b2;">
+                    <p style="margin:0; color: #c53030; font-weight: 600; font-size: 0.9rem; letter-spacing: 1px;">SISA WAKTU REVIEW</p>
+                    <span id="review-timer" style="font-size: 2.5rem; font-weight: 800; color: #c53030;">00:00</span>
+                </div>
+
+                <h2 style="color: #333; margin-bottom: 10px;">Luar Biasa, Selesai!</h2>
+                <p style="color: #666; margin-bottom: 30px; line-height: 1.6;">
+                    Semua soal telah dijawab. Kamu masih punya waktu sisa untuk memeriksa kembali jawabanmu atau langsung kirim nilai sekarang.
+                </p>
+                
+                <button onclick="backToQuiz()" class="option-btn" style="background: white; color: #8458B3; border: 2px solid #8458B3; margin-bottom: 15px; width: 100%; font-weight: 600; transition: 0.3s;">
+                    <i class="fas fa-search"></i> Periksa Kembali Jawaban
+                </button>
+                
+                <button onclick="finishQuiz()" class="option-btn" style="background: #8458B3; color: white; width: 100%; font-weight: 600; box-shadow: 0 5px 15px rgba(132, 88, 179, 0.3); transition: 0.3s;">
+                    <i class="fas fa-flag-checkered"></i> Selesai & Lihat Hasil
+                </button>
+            </div>
+        `;
     }
 }
 
-function renderReviewGrid() {
-    const gridContainer = document.getElementById('review-grid');
-    if (!gridContainer) return;
+// Fungsi pembantu untuk kembali ke kuis
+function backToQuiz() {
+    // Sembunyikan Dashboard Review
+    document.getElementById('review-dashboard').classList.add('hidden');
+    
+    // Munculkan Area Soal
+    document.getElementById('quiz-area').classList.remove('hidden');
+    
+    // MUNCULKAN Floating Timer di halaman soal
+    const floatingTimer = document.getElementById('global-review-info');
+    if(floatingTimer) floatingTimer.classList.remove('hidden');
 
-    // 1. Tambahkan Teks Panduan di atas grid (jika belum ada)
-    gridContainer.innerHTML = `
-        <p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 0.85rem; margin-bottom: 15px;">
-            <i class="fas fa-info-circle"></i> Klik nomor soal untuk mengecek atau mengubah jawabanmu.
-        </p>
-    `;
-
-    // 2. Sesuaikan Layout Grid agar responsif
-    gridContainer.style.display = 'grid';
-
-    // Ini kuncinya: 
-    // auto-fit = penuhi baris yang tersedia
-    // 40px = ukuran tetap supaya tidak kekecilan di HP
-    gridContainer.style.gridTemplateColumns = 'repeat(auto-fit, 40px)'; 
-
-    gridContainer.style.gap = '12px'; 
-    gridContainer.style.justifyContent = 'center'; // Menarik semua lingkaran ke tengah baris
-    gridContainer.style.margin = '0 auto'; 
-    gridContainer.style.padding = '10px'; // Jarak aman agar tidak nempel pinggir layar HP
-
-    questions.forEach((q, index) => {
-        const log = userAnswersLog[index];
-        const isAnswered = log && log.jawabanUser !== "Waktu Habis";
-        
-        const box = document.createElement('div');
-        box.className = 'review-box';
-        box.innerText = index + 1;
-        
-        // --- STYLING LINGKARAN & SOFT COLOR ---
-        box.style.width = '40px';
-        box.style.height = '40px';
-        box.style.lineHeight = '40px'; // Agar angka pas di tengah vertikal
-        box.style.borderRadius = '50%'; // Membuat jadi lingkaran sempurna
-        box.style.textAlign = 'center';
-        box.style.fontWeight = '600';
-        box.style.fontSize = '0.9rem';
-        box.style.cursor = 'pointer';
-        box.style.transition = 'all 0.3s ease';
-        
-        if (isAnswered) {
-            // Warna Biru/Ungu Soft (Bisa disesuaikan dengan var(--accent) Mas)
-            box.style.background = '#d6d6d6'; 
-            box.style.color = '#60566d';
-            box.style.border = '2px solid #adadad';
-        } else {
-            // Warna Abu-abu Soft untuk yang kosong
-            box.style.background = '#f8f9fa';
-            box.style.color = '#bdc3c7';
-            box.style.border = '2px solid #ecf0f1';
-        }
-
-        // Efek Hover agar lebih hidup
-        box.onmouseover = () => {
-            box.style.transform = 'scale(1.1)';
-            box.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-        };
-        box.onmouseout = () => {
-            box.style.transform = 'scale(1)';
-            box.style.boxShadow = 'none';
-        };
-
-        box.onclick = () => jumpToQuestion(index);
-        
-        gridContainer.appendChild(box);
-    });
+    showQuestion();
 }
 
 function startGlobalReviewTimer(seconds) {
-    // Jika timer sebelumnya masih jalan, hentikan dulu
     if (reviewTimerInterval) clearInterval(reviewTimerInterval);
 
     let timeLeftReview = Math.floor(seconds);
-    const display = document.getElementById('review-timer');
 
     reviewTimerInterval = setInterval(() => {
         const minutes = Math.floor(timeLeftReview / 60);
         const secs = timeLeftReview % 60;
+        const timeStr = `${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
 
-        if (display) {
-            display.innerText = `${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        // 1. Update Kotak Besar di Dashboard (Jika sedang terlihat)
+        const displayDashboard = document.getElementById('review-timer');
+        if (displayDashboard) displayDashboard.innerText = timeStr;
+        
+        // 2. Update Floating Timer di Soal (Jika sedang terlihat)
+        const displayFloating = document.getElementById('review-timer-floating');
+        if (displayFloating) displayFloating.innerText = timeStr;
+
+        // Efek Kritis: Jika sisa waktu < 60 detik, beri kelas animasi
+        const floatingContainer = document.getElementById('global-review-info');
+        if (timeLeftReview <= 60 && floatingContainer) {
+            floatingContainer.classList.add('timer-critical');
         }
 
         if (timeLeftReview <= 0) {
@@ -1162,23 +1176,211 @@ function startGlobalReviewTimer(seconds) {
     }, 1000);
 }
 
-function jumpToQuestion(index) {
-    // 1. Set index soal ke yang dipilih
-    currentQuestionIndex = index;
+function updatePagination() {
+    const navContainer = document.getElementById('quiz-pagination');
+    if (!navContainer) return;
 
-    // 2. Sembunyikan Dashboard Review, Munculkan Area Kuis
-    const reviewArea = document.getElementById('review-dashboard');
-    const quizArea = document.getElementById('quiz-area');
-    
-    if(reviewArea) reviewArea.classList.add('hidden');
-    if(quizArea) quizArea.classList.remove('hidden');
+    navContainer.innerHTML = '';
+    questions.forEach((_, index) => {
+        const btn = document.createElement('button');
+        btn.innerText = index + 1;
+        
+        // Style dasar nomor soal
+        btn.className = (index === currentQuestionIndex) ? 'nav-btn active' : 'nav-btn';
+        
+        // Tandai jika sudah dijawab (agar siswa tahu mana yang terlewat)
+        if (userAnswersLog[index]) {
+            btn.classList.add('answered');
+        }
 
-    // 3. Tampilkan Soal
-    showQuestion();
-    
-    // 4. [PENTING] Karena ini Mode Review, matikan timer per soal
-    // Agar tidak mengganggu Timer Global yang sedang jalan di background
-    clearInterval(timerInterval);
-    const timerDisplay = document.getElementById('timer');
-    if(timerDisplay) timerDisplay.innerText = "Mode Review";
+        btn.onclick = () => {
+            currentQuestionIndex = index;
+            showQuestion();
+        };
+        navContainer.appendChild(btn);
+    });
 }
+
+window.bukaPembahasan = function() {
+    const area = document.getElementById('review-pembahasan-area');
+    if(area) {
+        area.classList.remove('hidden');
+        // Animasi halus saat muncul
+        area.style.opacity = "0";
+        area.style.transition = "opacity 0.5s ease";
+        setTimeout(() => area.style.opacity = "1", 10);
+    }
+    
+    const container = document.getElementById('review-list-container');
+    if(!container) return;
+
+    container.innerHTML = ''; // Reset isi agar tidak duplikat saat diklik ulang
+
+    questions.forEach((q, index) => {
+        const log = userAnswersLog[index];
+        const isPG = q.type === 'pg' || !q.type;
+        
+        const card = document.createElement('div');
+        card.className = 'review-card'; // Tambahkan class untuk CSS
+        
+        // --- LOGIKA FILTER STATUS ---
+        const isCorrect = log && (log.status === "Benar" || log.status === "Benar (Otomatis)");
+        card.setAttribute('data-status', isCorrect ? 'correct' : 'wrong');
+
+        card.style = `
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid #eee;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-left: 5px solid ${isCorrect ? '#27ae60' : '#e74c3c'};
+        `;
+
+        // Tentukan Header (Nomor & Icon Status)
+        let statusHeader = "";
+        if (log) {
+            statusHeader = isCorrect 
+                ? `<span style="color:#27ae60; font-weight:600;"><i class="fas fa-check-circle"></i> Benar</span>`
+                : `<span style="color:#e74c3c; font-weight:600;"><i class="fas fa-times-circle"></i> Salah</span>`;
+        } else {
+            statusHeader = `<span style="color:#95a5a6;"><i class="fas fa-exclamation-circle"></i> Kosong</span>`;
+        }
+
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="background:#f3ebff; color:#8458B3; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:bold;">Soal ${index + 1}</span>
+                ${statusHeader}
+            </div>
+            <div style="margin-bottom:15px; line-height:1.5; color:#333; font-weight:500;">${q.question || q.text}</div>
+            <div id="opsi-review-${index}"></div>
+        `;
+
+        container.appendChild(card);
+
+        // Render Detail Opsi (PG) atau Jawaban (Essay)
+        const targetOpsi = document.getElementById(`opsi-review-${index}`);
+        if (isPG) {
+            renderOptionsReview(targetOpsi, q, log);
+        } else {
+            renderEssayReview(targetOpsi, q, log);
+        }
+    });
+
+    // Scroll otomatis ke area pembahasan dengan sedikit offset agar tidak terlalu mepet
+    const yOffset = -20; 
+    const y = area.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+};
+
+// JANGAN LUPA: Tambahkan fungsi filter ini juga agar tombol tab berfungsi
+window.filterReview = function(type) {
+    const allCards = document.querySelectorAll('.review-card');
+    const btnAll = document.getElementById('btn-filter-all');
+    const btnWrong = document.getElementById('btn-filter-wrong');
+
+    allCards.forEach(card => {
+        const isCorrect = card.getAttribute('data-status') === 'correct';
+        if (type === 'all') {
+            card.style.display = 'block';
+        } else {
+            card.style.display = isCorrect ? 'none' : 'block';
+        }
+    });
+
+    // Styling tombol saat aktif
+    if (type === 'all') {
+        btnAll.style.background = "#8458B3"; btnAll.style.color = "white";
+        btnWrong.style.background = "white"; btnWrong.style.color = "#666";
+    } else {
+        btnWrong.style.background = "#e74c3c"; btnWrong.style.color = "white";
+        btnAll.style.background = "white"; btnAll.style.color = "#666";
+    }
+};
+
+function renderOptionsReview(target, soal, log) {
+    const labelOpsi = ["A", "B", "C", "D", "E"];
+    const kunciIndex = soal.answer; // Index jawaban benar dari database
+    const userIndex = log ? log.indexJawabanUser : null; // Index yang diklik user
+
+    soal.options.forEach((opt, idx) => {
+        let bgColor = "#ffffff";
+        let textColor = "#494D5F";
+        let borderColor = "#eef0f7";
+        let icon = "";
+
+        // 1. Jika ini adalah KUNCI JAWABAN (Harus Hijau)
+        if (idx === kunciIndex) {
+            bgColor = "#d1fae5"; 
+            textColor = "#065f46";
+            borderColor = "#34d399";
+            icon = '<i class="fas fa-check" style="margin-left:auto; color:#10b981;"></i>';
+        } 
+        // 2. Jika ini pilihan USER tapi SALAH (Merah)
+        else if (userIndex !== null && idx === userIndex && idx !== kunciIndex) {
+            bgColor = "#fee2e2"; 
+            textColor = "#991b1b";
+            borderColor = "#f87171";
+            icon = '<i class="fas fa-times" style="margin-left:auto; color:#ef4444;"></i>';
+        }
+
+        const div = document.createElement('div');
+        div.style = `
+            display: flex; align-items: center; padding: 12px 15px; 
+            margin-bottom: 8px; border-radius: 10px; font-size: 0.95rem;
+            background: ${bgColor}; color: ${textColor}; border: 1.5px solid ${borderColor};
+            transition: 0.3s;
+        `;
+        
+        // Beri penebalan jika ini pilihan user atau kunci
+        if (idx === kunciIndex || idx === userIndex) div.style.fontWeight = "600";
+
+        div.innerHTML = `
+            <span style="margin-right:12px; font-weight:bold; opacity:0.5;">${labelOpsi[idx]}</span>
+            <span>${opt}</span>
+            ${icon}
+        `;
+        target.appendChild(div);
+    });
+}
+
+function renderEssayReview(target, soal, log) {
+    target.innerHTML = `
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="background:#f8f9fa; padding:12px; border-radius:10px; border-left:4px solid #8458B3;">
+                <small style="color:#888; font-weight:bold; text-transform:uppercase; font-size:0.7rem;">Jawaban Kamu:</small>
+                <div style="color:#444; margin-top:3px;">${log ? log.jawabanUser : '<i>(Tidak dijawab)</i>'}</div>
+            </div>
+            <div style="background:#f0fff4; padding:12px; border-radius:10px; border-left:4px solid #2ecc71;">
+                <small style="color:#888; font-weight:bold; text-transform:uppercase; font-size:0.7rem;">Kunci Jawaban:</small>
+                <div style="color:#065f46; margin-top:3px; font-weight:600;">${soal.answer}</div>
+            </div>
+        </div>
+    `;
+}
+
+window.filterReview = function(type) {
+    const allCards = document.querySelectorAll('.review-card');
+    const btnAll = document.getElementById('btn-filter-all');
+    const btnWrong = document.getElementById('btn-filter-wrong');
+
+    allCards.forEach(card => {
+        const isCorrect = card.getAttribute('data-status') === 'correct';
+        
+        if (type === 'all') {
+            card.style.display = 'block';
+        } else {
+            // Jika filter 'wrong', sembunyikan yang benar
+            card.style.display = isCorrect ? 'none' : 'block';
+        }
+    });
+
+    // Update Styling Tombol Tab
+    if (type === 'all') {
+        btnAll.style.background = "#8458B3"; btnAll.style.color = "white";
+        btnWrong.style.background = "white"; btnWrong.style.color = "#666";
+    } else {
+        btnWrong.style.background = "#e74c3c"; btnWrong.style.color = "white"; btnWrong.style.border = "1px solid #e74c3c";
+        btnAll.style.background = "white"; btnAll.style.color = "#666"; btnAll.style.border = "1px solid #eee";
+    }
+};

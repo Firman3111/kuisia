@@ -121,50 +121,40 @@ function initDashboard() {
 }
 
 // 4. MANAJEMEN MODAL
-window.openModalTambahKuis = function() {
+window.openModalKuis = function() {
+    // 1. Bersihkan sisa-sisa editan sebelumnya agar kembali ke mode "Tambah"
+    resetModalKeDefault(); 
+
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+        showCustomAlert("Peringatan", "Silakan login terlebih dahulu", "error");
+        return;
+    }
 
-    // Ambil data user terbaru untuk cek status premium
+    // 2. Ambil status premium dari Firebase
     database.ref(`users/${user.uid}`).once('value', snapshot => {
-        const userData = snapshot.val();
-        const isPremium = userData ? userData.is_premium : false;
+        const isPremium = snapshot.val()?.is_premium || false;
+        
+        // 3. Jalankan mesin pengecek gembok tadi
+        updatePremiumUI(isPremium);
 
-        const premiumRow = document.getElementById('premium-row');
-        const premiumOverlay = document.getElementById('premium-overlay');
-        const durModeInput = document.getElementById('durasi-mode-baru');
-        const durValInput = document.getElementById('durasi-value-baru');
-        const visibilityRadios = document.getElementsByName('visibility');
-
-        if (!isPremium) {
-            // TAMPILAN TERKUNCI (Non-Premium)
-            premiumRow.classList.add('premium-locked');
-            premiumOverlay.style.display = 'flex'; // Tampilkan overlay gembok
-            
-            // Disable Input agar tidak bisa diubah lewat keyboard/tab
-            durModeInput.disabled = true;
-            durValInput.disabled = true;
-            visibilityRadios.forEach(r => {
-                if(r.value === 'private') r.disabled = true;
-                if(r.value === 'public') r.checked = true; // Paksa public
-            });
-        } else {
-            // TAMPILAN TERBUKA (Premium)
-            premiumRow.classList.remove('premium-locked');
-            premiumOverlay.style.display = 'none'; // Sembunyikan overlay
-            
-            durModeInput.disabled = false;
-            durValInput.disabled = false;
-            visibilityRadios.forEach(r => r.disabled = false);
+        // 4. Munculkan Modal (Gunakan 'block' sesuai preferensi kestabilan Mas)
+        const modal = document.getElementById('modal-kuis');
+        if (modal) {
+            modal.style.display = 'block'; 
         }
-
-        document.getElementById('modal-kuis').style.display = 'block';
     });
 };
 
-window.closeModalKuis = function() {
-    document.getElementById('modal-kuis').style.display = 'none';
-};
+function closeModalKuis() {
+    const modal = document.getElementById('modal-kuis');
+    if (modal) {
+        modal.style.display = 'none';
+        
+        // Tambahkan panggilannya di sini
+        resetModalKeDefault(); 
+    }
+}
 
 // 5. SIMPAN KUIS KE FIREBASE (VERSI FINAL DENGAN INTEGRASI CONFIG BOBOT)
 window.simpanKuisBaru = async function() { 
@@ -443,6 +433,9 @@ function loadUserQuizzes() {
                             <i class="fa-regular fa-calendar"></i> ${date}
                         </span>
                         <div style="display:flex; gap:8px;">
+                            <button class="btn-action" onclick="persiapanEditKuis('${quizId}')" style="border:none; background:#f3ebff; color:var(--accent); width:32px; height:32px; border-radius:8px; cursor:pointer;" title="Edit Pengaturan">
+                                <i class="fas fa-edit"></i>
+                            </button>
                             <button class="btn-action" onclick="copyShareLink('${quizId}')" style="border:none; background:#f8fafc; color:#475569; width:32px; height:32px; border-radius:8px; cursor:pointer;" title="Share">
                                 <i class="fas fa-share-alt"></i>
                             </button>
@@ -851,12 +844,31 @@ document.getElementById('input-kategori').addEventListener('change', function(e)
     }
 });
 
-// B. Fungsi loadQuestions (Versi Perbaikan)
+// B. Fungsi loadQuestions (Versi Perbaikan dengan Scroll 500px)
 function loadQuestions(quizId) {
     const userId = auth.currentUser.uid;
     const container = document.getElementById('questions-list-container');
     const badge = document.getElementById('question-count-badge');
     
+    // --- PENERAPAN STYLE SCROLL 500PX ---
+    container.style.maxHeight = "500px";
+    container.style.overflowY = "auto";
+    container.style.paddingRight = "10px";
+    container.style.scrollBehavior = "smooth";
+
+    // Menambahkan style scrollbar khusus agar serasi dengan branding Zingquis
+    if (!document.getElementById('custom-scroll-style')) {
+        const style = document.createElement('style');
+        style.id = 'custom-scroll-style';
+        style.innerHTML = `
+            #questions-list-container::-webkit-scrollbar { width: 6px; }
+            #questions-list-container::-webkit-scrollbar-track { background: transparent; }
+            #questions-list-container::-webkit-scrollbar-thumb { background: #DDBDF4; border-radius: 10px; }
+            #questions-list-container::-webkit-scrollbar-thumb:hover { background: #8458B3; }
+        `;
+        document.head.appendChild(style);
+    }
+
     database.ref(`users/${userId}/quizzes/${quizId}/questions`).on('value', (snapshot) => {
         const data = snapshot.val();
         container.innerHTML = '';
@@ -864,7 +876,7 @@ function loadQuestions(quizId) {
         if (!data) {
             badge.innerText = "0 Soal";
             container.innerHTML = '<p style="text-align:center; color:#aaa; padding: 20px;">Belum ada soal pada kuis ini.</p>';
-            window.updateTargetStats(); // Tetap panggil agar angka kembali ke 0
+            if(window.updateTargetStats) window.updateTargetStats();
             return;
         }
 
@@ -872,26 +884,41 @@ function loadQuestions(quizId) {
         badge.innerText = `${questions.length} Soal`;
 
         Object.entries(data).forEach(([qId, qData]) => {
-            // Logika class dipindahkan ke sini agar qData terbaca
             const itemClass = qData.type === 'pg' ? 'soal-pg-item' : 'soal-essay-item';
-            const hotsClass = qData.isHots ? 'is-hots-item' : ''; // Penting untuk counter HOTS
+            const hotsClass = qData.isHots ? 'is-hots-item' : ''; 
             
             container.innerHTML += `
-                <div class="soal-item ${itemClass} ${hotsClass}" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <p style="margin:0;">
-                            ${qData.isHots ? '<span style="background:#ff9800; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:5px;">HOTS</span>' : ''}
+                <div class="soal-item ${itemClass} ${hotsClass}" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background: white; margin-bottom: 8px; border-radius: 12px; border: 1px solid #F4F7FE; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <p style="margin:0; font-size: 0.95rem; line-height: 1.4; color: #494D5F;">
+                            ${qData.isHots ? '<span style="background:#fff7ed; color:#c2410c; border:1px solid #ffedd5; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:5px; font-weight:bold;">HOTS</span>' : ''}
                             <strong>${qData.question}</strong>
                         </p>
-                        <small style="color:#666;">Tipe: ${qData.type.toUpperCase()} | Poin: ${qData.poin || 0}</small>
+                        <small style="color:#666; display: block; margin-top: 4px;">
+                            Tipe: <span style="text-transform: uppercase;">${qData.type}</span> | Poin: ${qData.poin || 0}
+                        </small>
                     </div>
-                    <button onclick="hapusSoal('${qId}')" class="btn-delete-small" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="window.bukaModalEditSimple('${qId}')" 
+                            style="background:#f3ebff; color:#8458B3; border:none; width:35px; height:35px; border-radius:10px; cursor:pointer; transition: 0.2s;"
+                            title="Edit Soal">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        
+                        <button onclick="hapusSoal('${qId}')" 
+                            style="background:#fee2e2; color:#ef4444; border:none; width:35px; height:35px; border-radius:10px; cursor:pointer; transition: 0.2s;"
+                            title="Hapus Soal">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>`;
         });
 
-        window.updateTargetStats();
+        if(window.updateTargetStats) window.updateTargetStats();
+
+        // --- TAMBAHKAN INI DI BARIS TERAKHIR DALAM SNAPSHOT ---
+        window.checkQuotaAndLock(quizId);
     });
 }
 
@@ -2302,7 +2329,349 @@ window.updateTargetStats = function() {
     if (hotsEl) hotsEl.innerHTML = `<span style="color: ${countHots >= config.hotsTarget ? '#27ae60' : '#d68100'}">${countHots} / ${config.hotsTarget || 0}</span>`;
 };
 
+//LOGIKA SWITCH FUNGSI TOMBOL MODAL
 
+let modeEdit = false;
+let targetEditId = "";
+
+function persiapanEditKuis(quizId) {
+    modeEdit = true;
+    targetEditId = quizId;
+    const user = auth.currentUser;
+
+    // Ambil data kuis DAN status user secara bersamaan
+    database.ref(`users/${user.uid}`).once('value', userSnap => {
+        const userData = userSnap.val();
+        const isPremium = userData ? userData.is_premium : false;
+
+        // Jalankan update UI Premium agar gembok terbuka/tertutup sesuai status
+        updatePremiumUI(isPremium);
+
+        database.ref(`users/${user.uid}/quizzes/${quizId}`).once('value', (quizSnap) => {
+            const data = quizSnap.val();
+            if (!data) return;
+
+            // Masukkan data ke form (nama, tipe, durasi, dll seperti kode Mas sebelumnya)
+            document.getElementById('nama-kuis-baru').value = data.title || "";
+            document.getElementById('tipe-kuis-baru').value = data.quizType || "pg";
+            document.getElementById('durasi-value-baru').value = data.duration || 60;
+            document.getElementById('set-deadline-baru').value = data.deadline || "";
+            document.getElementById('deskripsi-kuis-baru').value = data.description || "";
+            
+            // Set Visibility (Penting agar radio button sesuai data lama)
+            const radioTarget = document.querySelector(`input[name="visibility"][value="${data.visibility || 'public'}"]`);
+            if(radioTarget) radioTarget.checked = true;
+            
+            if(data.visibility === 'private') {
+                document.getElementById('private-settings').classList.remove('hidden');
+                document.getElementById('set-quiz-password-baru').value = data.quizPassword || "";
+            }
+
+            // Ubah tombol & judul
+            document.querySelector('#modal-kuis h2').innerHTML = `<i class="fas fa-edit"></i> Edit Pengaturan Kuis`;
+            const btnSimpan = document.querySelector('.btn-buat');
+            btnSimpan.innerText = "Update Perubahan";
+            btnSimpan.setAttribute('onclick', 'simpanPerubahanKuis()');
+
+            // Tampilkan modal
+            document.getElementById('modal-kuis').style.display = 'block';
+        });
+    });
+}
+
+//FUNGSI PEMICU UPDATE KUIS
+
+function simpanPerubahanKuis() {
+    const userId = auth.currentUser.uid;
+    
+    // Ambil semua nilai dari input yang sama dengan modal kuis lama
+    const updatedData = {
+        title: document.getElementById('nama-kuis-baru').value,
+        quizType: document.getElementById('tipe-kuis-baru').value,
+        duration: parseInt(document.getElementById('durasi-value-baru').value),
+        deadline: document.getElementById('set-deadline-baru').value,
+        description: document.getElementById('deskripsi-kuis-baru').value
+    };
+
+    // Tambahkan password jika ada
+    const pass = document.getElementById('set-quiz-password-baru').value;
+    if(pass) updatedData.quizPassword = pass;
+
+    // Update ke Firebase
+    database.ref(`users/${userId}/quizzes/${targetEditId}`).update(updatedData)
+    .then(() => {
+        showCustomAlert("Berhasil!", "Kuis telah diperbarui", "success");
+        closeModalKuis();
+        resetModalKeDefault(); // Kembalikan modal ke mode "Tambah"
+    })
+    .catch(err => console.error(err));
+}
+
+// Fungsi tambahan agar saat buka modal "Tambah Kuis" lagi, tampilannya tidak "Edit"
+function resetModalKeDefault() {
+    modeEdit = false;
+    targetEditId = "";
+
+    // 1. Kembalikan Teks Header & Tombol
+    const modalTitle = document.querySelector('#modal-kuis h2');
+    if (modalTitle) modalTitle.innerHTML = `<i class="fas fa-plus-circle"></i> Tambah Kuis Baru`;
+    
+    const btnSimpan = document.querySelector('.btn-buat');
+    if (btnSimpan) {
+        btnSimpan.innerText = "Buat Sekarang";
+        btnSimpan.setAttribute('onclick', 'simpanKuisBaru()');
+    }
+
+    // 2. Kosongkan Semua Input Form
+    const inputs = [
+        'nama-kuis-baru', 
+        'durasi-value-baru', 
+        'set-deadline-baru', 
+        'set-quiz-password-baru', 
+        'deskripsi-kuis-baru'
+    ];
+    
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
+
+    // 3. Kembalikan Select ke Default
+    const tipeKuis = document.getElementById('tipe-kuis-baru');
+    if (tipeKuis) tipeKuis.value = "pg";
+
+    // 4. Sembunyikan field password jika sebelumnya terbuka
+    const privateSettings = document.getElementById('private-settings');
+    if (privateSettings) privateSettings.classList.add('hidden');
+    
+    // Reset radio button visibility ke Public
+    const radioPublic = document.querySelector('input[name="visibility"][value="public"]');
+    if (radioPublic) radioPublic.checked = true;
+}
+
+//FUNGSI CHECK USER 
+function updatePremiumUI(isPremium) {
+    const premiumRow = document.getElementById('premium-row');
+    const premiumOverlay = document.getElementById('premium-overlay');
+    const durModeInput = document.getElementById('durasi-mode-baru');
+    const durValInput = document.getElementById('durasi-value-baru');
+    const visibilityRadios = document.getElementsByName('visibility');
+
+    if (!isPremium) {
+        // --- LOGIKA NON-PREMIUM (TERKUNCI) ---
+        if(premiumRow) premiumRow.classList.add('premium-locked');
+        if(premiumOverlay) premiumOverlay.style.display = 'flex';
+        if(durModeInput) durModeInput.disabled = true;
+        if(durValInput) durValInput.disabled = true;
+        
+        visibilityRadios.forEach(r => {
+            if(r.value === 'private') r.disabled = true;
+            if(r.value === 'public') r.checked = true; // Paksa public
+        });
+    } else {
+        // --- LOGIKA PREMIUM (TERBUKA) ---
+        if(premiumRow) premiumRow.classList.remove('premium-locked');
+        if(premiumOverlay) premiumOverlay.style.display = 'none';
+        if(durModeInput) durModeInput.disabled = false;
+        if(durValInput) durValInput.disabled = false;
+        visibilityRadios.forEach(r => r.disabled = false);
+    }
+}
+
+
+//MODAL EDIT SOAL
+// Variabel penyimpan ID soal yang sedang diedit di modal simple
+let currentSimpleEditId = "";
+
+// 1. Fungsi Buka Modal & Isi Data
+window.bukaModalEditSimple = function(soalId) {
+    currentSimpleEditId = soalId;
+    const userId = auth.currentUser.uid;
+    const quizId = window.activeQuizId || document.getElementById('input-kategori').value;
+
+    if(!quizId) return alert("Kuis tidak ditemukan");
+
+    database.ref(`users/${userId}/quizzes/${quizId}/questions/${soalId}`).once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Set Pertanyaan
+        document.getElementById('edit-simple-pertanyaan').value = data.question;
+
+        // Cek Tipe Soal untuk Tampilan Modal
+        const areaPG = document.getElementById('area-edit-pg');
+        const areaEssay = document.getElementById('area-edit-essay');
+
+        if (data.type === 'pg' || data.type === 'pilihan_ganda') {
+            areaPG.style.display = 'block';
+            areaEssay.style.display = 'none';
+            
+            // Isi Opsi A-D (Hanya 4 opsi untuk kesederhanaan)
+            if (data.options) {
+                data.options.forEach((opt, idx) => {
+                    const el = document.getElementById(`edit-opt-${idx}`);
+                    if (el) el.value = opt;
+                });
+            }
+            // Set Kunci Jawaban
+            document.getElementById('edit-simple-kunci-pg').value = data.answer;
+        } else {
+            areaPG.style.display = 'none';
+            areaEssay.style.display = 'block';
+            document.getElementById('edit-simple-kunci-essay').value = data.answer;
+        }
+
+        // Tampilkan Modal
+        document.getElementById('modal-edit-soal-simple').style.display = 'block';
+    });
+};
+
+// 2. Fungsi Tutup Modal
+window.tutupModalEditSimple = function() {
+    document.getElementById('modal-edit-soal-simple').style.display = 'none';
+};
+
+// 3. Fungsi Eksekusi Simpan Perubahan (Versi Dinamis & Fix Opsi Hantu)
+window.simpanPerubahanSoalSimple = function() {
+    const userId = auth.currentUser.uid;
+    const quizId = window.activeQuizId || document.getElementById('input-kategori').value;
+    
+    if(!currentSimpleEditId) return;
+
+    const areaPG = document.getElementById('area-edit-pg');
+    const isPG = areaPG && areaPG.style.display === 'block';
+    
+    // Ambil teks pertanyaan (Mendukung Quill atau Textarea biasa)
+    let questionContent;
+    if (window.quillEditorEdit) { 
+        // Jika Mas pakai Quill di modal edit
+        questionContent = window.quillEditorEdit.root.innerHTML;
+    } else {
+        questionContent = document.getElementById('edit-simple-pertanyaan').value;
+    }
+
+    let updatedData = {
+        question: questionContent,
+        updated_at: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    if (isPG) {
+        // --- PERBAIKAN: PENGAMBILAN OPSI DINAMIS ---
+        const opts = [];
+        
+        // Cari semua input yang ID-nya diawali dengan 'edit-opt-' di dalam areaPG
+        const inputOptions = areaPG.querySelectorAll('input[id^="edit-opt-"]');
+        
+        inputOptions.forEach(input => {
+            const val = input.value.trim();
+            // Hanya masukkan ke array jika input tidak kosong
+            if (val !== "") {
+                opts.push(val);
+            }
+        });
+
+        if (opts.length < 2) {
+            if(window.showNotif) showNotif("Peringatan", "Minimal harus ada 2 opsi jawaban!");
+            else alert("Minimal harus ada 2 opsi jawaban!");
+            return;
+        }
+
+        updatedData.options = opts;
+        updatedData.answer = parseInt(document.getElementById('edit-simple-kunci-pg').value);
+    } else {
+        // Untuk Essay
+        const answerEssay = document.getElementById('edit-simple-kunci-essay').value;
+        if (!answerEssay.trim()) {
+            if(window.showNotif) showNotif("Peringatan", "Kunci jawaban essay tidak boleh kosong!");
+            else alert("Kunci jawaban essay tidak boleh kosong!");
+            return;
+        }
+        updatedData.answer = answerEssay;
+    }
+
+    // Push ke Firebase
+    database.ref(`users/${userId}/quizzes/${quizId}/questions/${currentSimpleEditId}`)
+    .update(updatedData)
+    .then(() => {
+        if(window.showNotif) {
+            showNotif("Berhasil", "Soal telah diperbarui!");
+        } else {
+            alert("Soal telah diperbarui!");
+        }
+        
+        tutupModalEditSimple();
+        
+        // Refresh daftar soal di dashboard agar perubahan langsung terlihat
+        if(window.loadQuestions) window.loadQuestions(quizId);
+        
+        // Update statistik jika ada fungsi tersebut
+        if(window.updateTargetStats) window.updateTargetStats();
+    })
+    .catch(err => {
+        console.error("Error update soal:", err);
+        if(window.showNotif) showNotif("Gagal", "Gagal menyimpan perubahan.");
+    });
+};
+
+// Fungsi untuk "Gembok" atau "Buka" form pembuat soal
+window.toggleFormInput = function(isDisabled) {
+    const form = document.getElementById('form-soal');
+    if (!form) return;
+
+    // Ambil semua elemen input, select, dan button di dalam form
+    const elements = form.querySelectorAll('input, textarea, select, button');
+    
+    elements.forEach(el => {
+        // Tombol Simpan diberikan perlakuan khusus agar visualnya jelas
+        if (el.classList.contains('cta-button')) {
+            el.style.opacity = isDisabled ? "0.6" : "1";
+            el.style.cursor = isDisabled ? "not-allowed" : "pointer";
+            el.style.filter = isDisabled ? "grayscale(1)" : "none";
+            el.innerHTML = isDisabled ? '<i class="fas fa-lock"></i> Kuota Sesuai Config Terpenuhi' : '<i class="fas fa-save"></i> Simpan ke Daftar Soal';
+        }
+        
+        // Disable elemennya
+        el.disabled = isDisabled;
+    });
+
+    // Jika nanti Mas pakai Quill, tambahkan ini:
+    if (window.quillEditor) {
+        window.quillEditor.enable(!isDisabled);
+        const toolbar = document.querySelector('.ql-toolbar');
+        if(toolbar) toolbar.style.opacity = isDisabled ? "0.5" : "1";
+        if(toolbar) toolbar.style.pointerEvents = isDisabled ? "none" : "auto";
+    }
+};
+
+window.checkQuotaAndLock = async function(quizId) {
+    if (!quizId) return;
+
+    const userId = auth.currentUser.uid;
+    // Ambil config yang sedang aktif di memori
+    const config = window.currentKuisConfig || {};
+    
+    try {
+        const snap = await database.ref(`users/${userId}/quizzes/${quizId}/questions`).once('value');
+        const questions = snap.val() || {};
+        const questionsArray = Object.values(questions);
+
+        const countPG = questionsArray.filter(q => q.type === 'pg').length;
+        const countEssay = questionsArray.filter(q => q.type === 'essay').length;
+
+        const targetPG = parseInt(config.pgTarget) || 0;
+        const targetEssay = parseInt(config.essayTarget) || 0;
+
+        // Form dikunci HANYA JIKA kedua tipe soal (PG & Essay) sudah mencapai atau melebihi target
+        // Jika salah satu masih ada slot, biarkan terbuka
+        if (countPG >= targetPG && countEssay >= targetEssay) {
+            window.toggleFormInput(true);
+        } else {
+            window.toggleFormInput(false);
+        }
+    } catch (error) {
+        console.error("Gagal cek kuota:", error);
+    }
+};
 
 
 

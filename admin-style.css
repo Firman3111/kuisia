@@ -264,7 +264,9 @@ body {
     background-color: rgba(0,0,0,0.6); 
     overflow: auto;
     padding: 20px;
-}
+    align-items: center; 
+    justify-content: center;
+    }
 
 .modal-content {
     background-color: #fff;
@@ -1384,6 +1386,34 @@ body {
     height: 100%;
     background: linear-gradient(90deg, #8458B3, #a280d6);
     transition: width 0.5s ease-in-out;
+}
+
+/*Scroll Kelola Soal*/
+#questions-list-container {
+    max-height: 500px; 
+    overflow-y: auto;
+    padding-right: 10px; /* Ruang agar teks tidak tertutup scrollbar */
+    margin-top: 15px;
+    /* Smooth scrolling untuk user experience yang lebih baik */
+    scroll-behavior: smooth; 
+}
+
+/* Custom Scrollbar untuk Chrome, Edge, dan Safari */
+#questions-list-container::-webkit-scrollbar {
+    width: 6px; /* Lebih tipis agar elegan */
+}
+
+#questions-list-container::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+#questions-list-container::-webkit-scrollbar-thumb {
+    background: var(--accent-light); /* Warna ungu muda Mas */
+    border-radius: 20px;
+}
+
+#questions-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent); /* Warna ungu utama saat disentuh */
 }
 
 /* --- RESPONSIVE DESIGN --- */
