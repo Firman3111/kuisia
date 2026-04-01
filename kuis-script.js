@@ -345,7 +345,7 @@ function backToHome() {
 window.startQuiz = startQuiz;
 window.realStart = realStart;
 
-// PERBAIKAN: Nama fungsi disamakan dan pengecekan properti soal
+// PERBAIKAN: Fungsi showQuestion dengan Dukungan Gambar Soal
 function showQuestion() {
     if (currentQuestionIndex < questions.length) {
         // 1. UPDATE PROGRESS BAR
@@ -365,10 +365,22 @@ function showQuestion() {
             // Gunakan innerHTML karena data dari Admin (Quill) berbentuk HTML
             let content = q.question || q.text || "Soal tidak ditemukan";
             
+            // --- LOGIKA PENAMBAHAN GAMBAR (FITUR BARU) ---
+            // Jika ada properti image di database, kita tambahkan elemen img
+            if (q.image && q.image !== "") {
+                content += `
+                    <div class="question-image-container" style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                        <img src="${q.image}" alt="Ilustrasi Soal" 
+                             style="max-width: 100%; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f3ebff;">
+                    </div>
+                `;
+            }
+
             // Tambahkan badge HOTS jika ada
             if (q.isHots || q.tipe_soal === "HOTS") {
                 content = `<span class="badge-hots"><i class="fas fa-fire"></i> SOAL TANTANGAN (HOTS)</span><br>${content}`;
             }
+            
             qTextEl.innerHTML = content;
         }
 
@@ -382,7 +394,6 @@ function showQuestion() {
             const essayWrapper = document.createElement('div');
             essayWrapper.style.width = '100%';
 
-            // Ambil jawaban lama dari log jika user navigasi balik
             const teksLama = dataLama ? dataLama.jawabanUser : "";
 
             essayWrapper.innerHTML = `
@@ -408,10 +419,8 @@ function showQuestion() {
                     <span class="option-text">${opt}</span>
                 `;
 
-                // --- LOGIKA "SUDAH TERPILIH" (NETRAL) ---
-                // Cek apakah index ini sesuai dengan index yang pernah disimpan di log
                 if (dataLama && dataLama.indexJawabanUser === index) {
-                    btn.style.background = "#8458B3"; // Ungu Zingquis
+                    btn.style.background = "#8458B3"; 
                     btn.style.color = "white";
                     btn.style.borderColor = "#8458B3";
                     btn.classList.add('selected');
@@ -422,7 +431,7 @@ function showQuestion() {
             });
         }
 
-        // 4. UPDATE NAVIGASI BAWAH (PAGINATION)
+        // 4. UPDATE NAVIGASI BAWAH
         if (typeof updatePagination === 'function') updatePagination();
 
         // 5. LOGIKA TIMER & DEADLINE
@@ -431,8 +440,6 @@ function showQuestion() {
         if (quizDurationMode === 'timer') {
             if (timerBox) {
                 timerBox.style.display = 'block';
-                
-                // Mode Review (Jika user kembali ke soal yang sudah dijawab)
                 if (typeof isReviewPhase !== 'undefined' && isReviewPhase) {
                     timerBox.innerHTML = `<span style="color: #8458B3;"><i class="fas fa-clock"></i> Sisa Waktu Review: <span id="review-timer-floating"></span></span>`;
                     timerBox.style.background = "#f3ebff";
@@ -440,7 +447,6 @@ function showQuestion() {
                     timerBox.style.borderRadius = "10px";
                     clearInterval(timerInterval); 
                 } else {
-                    // Mode Kuis Normal
                     timerBox.innerHTML = `<i class="fas fa-hourglass-half"></i> Sisa Waktu: <span id="timer-display">${quizDurationValue}</span> detik`;
                     timerBox.style.background = "transparent";
                     timerBox.style.color = "var(--accent)";
@@ -448,7 +454,6 @@ function showQuestion() {
                 }
             }
         } else {
-            // Logika Deadline Tanggal
             if (quizDataGlobal && quizDataGlobal.deadline) {
                 const d = new Date(quizDataGlobal.deadline);
                 const formatLengkap = d.toLocaleDateString('id-ID', { 
@@ -467,7 +472,6 @@ function showQuestion() {
         }
 
     } else {
-        // Jika soal habis
         const progressFill = document.getElementById('progress-fill');
         if(progressFill) progressFill.style.width = `100%`;
         finishQuiz();

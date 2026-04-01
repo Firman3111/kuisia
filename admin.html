@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin-style.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 </head>
 <body>
 
@@ -174,7 +176,7 @@
                 <div id="form-body" style="display: none; padding-top: 20px;">
                     <div class="live-preview-container">
                         <div class="editor-side">
-                            <form id="form-soal">
+                            <form id="form-soal" novalidate>
 
                                 <div id="status-target-container" style="background: #ffffff; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                                     <div style="font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
@@ -206,8 +208,32 @@
                                 </div>
 
                                 <div class="input-group">
-                                    <label class="label-large">Pertanyaan</label>
-                                    <textarea id="input-soal" class="input-modern" rows="3" placeholder="Ketik soal di sini..." required></textarea>
+                                    <label class="label-large" style="margin-bottom: 5px;">Pertanyaan</label>
+                                    <textarea id="input-soal" class="input-modern" rows="3" style="display: none;" placeholder="Ketik soal di sini..."></textarea>
+                                    <div id="editor-container" style="height: 200px; background: white; border-radius: 0 0 12px 12px;"></div>
+                                    <input type="hidden" name="question_text" id="question_text">
+                                    <div class="upload-section" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 1px solid #eef0f7;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                            <label class="label-large" style="margin:0;">Gambar Ilustrasi</label>
+                                            <span id="quota-info" style="font-size: 0.8rem; font-weight: 600; color: #8458B3; background: #f3ebff; padding: 2px 10px; border-radius: 10px;">
+                                                Kuota: <span id="current-photo-count">0</span>/3
+                                            </span>
+                                        </div>
+
+                                        <label id="btn-upload-label" for="image-upload" class="option-btn" style="background: white; color: #8458B3; border: 2px dashed #8458B3; display: block; cursor: pointer; padding: 12px; border-radius: 10px; font-size: 0.85rem; text-align: center; transition: 0.3s;">
+                                            <i class="fas fa-cloud-upload-alt"></i> Unggah Gambar (Maks. 3 / kuis)
+                                        </label>
+                                        <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageSoal(this)">
+
+                                        <div id="upload-progress-container" style="display:none; margin: 10px 0;">
+                                            <div style="width: 100%; background: #eee; border-radius: 5px;">
+                                                <div id="upload-progress-bar" style="width: 0%; height: 10px; background: #8458B3; border-radius: 5px; transition: width 0.3s;"></div>
+                                            </div>
+                                            <small id="upload-status-text" style="color: #666;">Mengunggah: 0%</small>
+                                        </div>
+
+                                        <div id="preview-list" style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;"></div>
+                                    </div>
                                 </div>
 
                                 <div id="pg-input-area">
@@ -346,7 +372,22 @@
             <hr style="border:0; border-top:1px solid var(--bg-admin); margin:15px 0;">
             
             <label style="display:block; font-weight:600; margin-bottom:8px; color:var(--text); font-size:0.85rem;">Pertanyaan:</label>
-            <textarea id="edit-simple-pertanyaan" style="width:100%; height:100px; padding:12px; border-radius:12px; border:1.5px solid var(--bg-admin); font-family:inherit; margin-bottom:20px; outline:none; color:var(--text); resize: none; background: #f9faff;"></textarea>
+            <div id="editor-container-edit" style="height: 160px; margin-bottom: 20px; border-radius: 12px; border: 1.5px solid var(--bg-admin); overflow: hidden;">
+                <div id="edit-quill-toolbar"></div>
+                <div id="edit-quill-editor" style="height: 110px; font-family: 'Poppins';"></div>
+            </div>
+
+            <label style="display:block; font-weight:600; margin-bottom:8px; margin-top: 10px; color:var(--text); font-size:0.85rem;">Gambar Soal (Opsional):</label>
+            <div id="edit-image-preview-container" style="display:none; margin-bottom: 15px; text-align: center; position: relative;">
+                <img id="edit-image-preview" src="" style="max-width: 100%; max-height: 150px; border-radius: 10px; border: 2px solid var(--accent-light);">
+                <button onclick="hapusGambarEdit()" style="position: absolute; top: -10px; right: 10px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <input type="file" id="edit-input-image" accept="image/*" onchange="handleImageEdit(this)" style="display: none;">
+                <button onclick="document.getElementById('edit-input-image').click()" type="button" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px dashed var(--accent-light); background: #f9faff; color: var(--accent); font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-camera"></i> Ganti / Tambah Gambar
+                </button>
+            </div>
 
             <div id="area-edit-pg" style="display:none;">
                 <label style="display:block; font-weight:600; margin-bottom:10px; color:var(--text); font-size:0.85rem;">Pilihan Jawaban:</label>

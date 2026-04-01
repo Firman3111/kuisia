@@ -1416,6 +1416,37 @@ body {
     background: var(--accent); /* Warna ungu utama saat disentuh */
 }
 
+/* Menghilangkan border default quill agar menyatu dengan container kita */
+/* Membuat toolbar quill lebih fleksibel di layar kecil */
+.ql-toolbar.ql-snow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Memperbesar sedikit tombol icon agar mudah di-tap jari */
+.ql-snow .ql-toolbar button, .ql-snow.ql-toolbar button {
+    width: 32px;
+    height: 32px;
+}
+
+/* Memperbesar ukuran teks di dalam editor Quill */
+.ql-editor {
+    font-size: 1.1rem; /* Ukuran font lebih besar sedikit dari standar */
+    line-height: 1.6;  /* Jarak antar baris agar tidak rapat */
+    font-family: 'Poppins', sans-serif; /* Pastikan font sama dengan tema Mas */
+    min-height: 150px;
+}
+
+/* Mengatur warna placeholder agar tidak terlalu kontras */
+.ql-editor.ql-blank::before {
+    font-size: 1rem;
+    font-style: normal;
+    color: #a0aec0;
+}
+
 /* --- RESPONSIVE DESIGN --- */
 /* Layar Tablet & HP (Lebar di bawah 768px) */
 @media (max-width: 768px) {
