@@ -278,6 +278,35 @@ window.startQuiz = function() {
     }
 };
 
+//ANIMASI LOGO
+function triggerSplash() {
+    const logo = document.getElementById('splashLogo');
+    const w1 = document.getElementById('sw1');
+    const w2 = document.getElementById('sw2');
+    const w3 = document.getElementById('sw3');
+    const sub = document.getElementById('subSplash');
+
+    // 1. Munculkan Logo dengan Bounce & Shimmer
+    setTimeout(() => {
+        logo.classList.add('animate-bounce', 'animate-shimmer');
+    }, 300);
+
+    // 2. Munculkan Kata "Aku,"
+    setTimeout(() => w1.classList.add('pop'), 800);
+
+    // 3. Munculkan Kata "Kamu,"
+    setTimeout(() => w2.classList.add('pop'), 1100);
+
+    // 4. Munculkan Kata "Kita"
+    setTimeout(() => w3.classList.add('pop'), 1400);
+
+    // 5. Munculkan "Belajar Bersama"
+    setTimeout(() => sub.classList.add('pop'), 1800);
+}
+
+// Panggil fungsi ini tepat setelah halaman load
+document.addEventListener('DOMContentLoaded', triggerSplash);
+
 //FITUR KEAMANAN
 
 // 1. CEK STATUS SEBELUMNYA (Mencegah Resume Tanpa Nama)
@@ -1537,18 +1566,22 @@ function resetBrandingStyles() {
 
 function applyBrandingStyles(ad) {
     const root = document.documentElement;
+    const divider = document.getElementById('branding-divider');
+    const logoArea = document.getElementById('branding-logo-area');
     
     // 1. Ubah Warna Tema (Warna Brand & Transparansinya)
     root.style.setProperty('--accent', ad.brandColor);
     root.style.setProperty('--accent-light', ad.brandColor + '44'); 
 
-    // 2. Tampilkan Logo Sponsor (Jika elemen area logo ada di HTML)
-    const logoArea = document.getElementById('branding-logo-area');
+    // 2. Tampilkan Logo Sponsor & Munculkan Divider
     if (logoArea && ad.logoUrl) {
+        // Munculkan garis pemisah jika ada sponsor
+        if (divider) divider.style.display = 'block';
+
         logoArea.innerHTML = `
             <div style="animation: fadeIn 0.8s ease; text-align: center;">
-                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 10px; letter-spacing: 1px; font-weight: 600;">BELAJAR BERSAMA</p>
-                <img src="${ad.logoUrl}" style="max-height: 100px; width: auto; object-fit: contain;">
+                <p style="font-size: 0.7rem; color: #94a3b8; margin-bottom: 5px; letter-spacing: 1px; font-weight: 600; text-transform: uppercase;">Supported by</p>
+                <img src="${ad.logoUrl}" style="max-height: 75px; width: auto; object-fit: contain;">
             </div>
         `;
     }
@@ -1558,11 +1591,8 @@ function applyBrandingStyles(ad) {
         activeMotivation = ad.motivation || "";
     }
 
-    console.log(`🎨 Branding Aktif: ${ad.client}`);
+    console.log(`🎨 Branding Aktif: ${ad.client} dengan layout berdampingan`);
 }
-
-
-
 
 // Jalankan fungsi saat halaman siap
 document.addEventListener('DOMContentLoaded', loadBrandingAds);

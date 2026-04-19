@@ -62,30 +62,54 @@
 
         <div id="branding-logo-area" style="text-align: center; margin-bottom: 20px;"></div>
         
-        <h1>Jelajahi Kuis Interaktif</h1>
-        <p>Mainkan kuis terbaru yang dibuat oleh komunitas Kuisia</p>
+        <h1>Jelajahi Kuisia</h1>
+        <p>Mainkan kuis terbaru yang dibuat oleh komunitas kami</p>
         
         <div class="slider-wrapper" style="max-width: 1400px; margin: 40px auto 0;">
-
-            <div class="search-container" style="text-align: center; margin: 20px 0;">
-                <input type="text" id="search-quiz" placeholder="Cari judul, Nama Author atau deskripsi kuis..." 
-                    style="padding: 10px 20px; width: 80%; max-width: 800px; border-radius: 25px; border: 1px solid #ddd;">
-            </div>
-
-            <section class="viral-section" style="margin-top: 30px; padding-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 15px;">
-                    <h3 style="font-weight: 800; color: #333; font-size: 1.1rem; margin: 0;">🔥 Uji Kemampuanmu!</h3>
-                    <!--<span style="font-size: 0.8rem; color: var(--accent); font-weight: 600; cursor: pointer;">Lihat Semua</span>-->
-                </div>
+            <div class="knowledge-highlight-box" style="background: linear-gradient(180deg, #f9f0ff 0%, #ffffff 100%); padding: 30px 10px; border-radius: 30px; border: 1px solid #e1e8f5; margin-bottom: 20px;">
                 
-                <div id="viral-scroll-container" class="horizontal-scroll-wrapper">
-                    <div class="loading-state" style="padding: 20px; color: #999; font-size: 0.9rem;">
-                        Sedang menyiapkan tantangan untukmu...
+                <div class="search-container" style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="font-weight: 800; color: #333; margin-bottom: 15px; font-size: 1.5rem;">🔥 Knowledge Challenge</h2>
+                    <div style="position: relative; max-width: 800px; margin: 0 auto;">
+                        <input type="text" id="search-quiz" placeholder="Cari judul, Nama Author atau deskripsi kuis..." 
+                            style="padding: 15px 25px; width: 90%; border-radius: 50px; border: 2px solid #e0e6ed; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); font-size: 1rem; transition: 0.3s;">
+                        <i class="fas fa-search" style="position: absolute; right: 8%; top: 18px; color: #aaa;"></i>
                     </div>
                 </div>
-            </section>
-            
-            <div id="quiz-list" class="quiz-grid">
+
+                <section class="viral-section" style="padding-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 15px;">
+    
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="challenge-icon-container">
+                                <i class="fas fa-bolt challenge-icon bolt-1"></i>
+                                <i class="fas fa-bolt challenge-icon bolt-2"></i>
+                            </div>
+                            <h3 style="font-weight: 800; color: #333; font-size: 1.1rem; margin: 0;">Uji Kemampuanmu!</h3>
+                        </div>
+
+                        <div class="scroll-controls" style="display: flex; gap: 10px;">
+                            <button onclick="scrollViral(-1)" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="scrollViral(1)" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div id="viral-scroll-container" class="horizontal-scroll-wrapper" style="display: flex !important; overflow-x: auto !important; gap: 20px; padding: 10px 20px 20px;">
+                        <div class="loading-state" style="padding: 20px; color: #999; font-size: 0.9rem;">
+                            Sedang menyiapkan tantangan untukmu...
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-top: 30px;">
+                <h3 style="font-weight: 800; color: #333; font-size: 1.1rem; margin: 0;">📚 Kuis Terbaru</h3>
+                <div class="scroll-controls" style="display: flex; gap: 10px;">
+                    <button onclick="scrollMain(-1)" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="scrollMain(1)" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div id="quiz-list" class="horizontal-scroll-wrapper" style="display: flex !important; overflow-x: auto !important; gap: 20px; padding: 15px 20px 30px 20px;">
                 <p>Sedang memuat kuis...</p>
             </div>
         </div>

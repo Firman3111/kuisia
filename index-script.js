@@ -90,80 +90,96 @@ function renderQuizzes(quizzes) {
     quizContainer.innerHTML = '';
     
     if (quizzes.length === 0) {
-        quizContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding: 50px;">Tidak ada kuis yang ditemukan.</p>';
+        quizContainer.innerHTML = '<p style="text-align:center; padding: 50px; min-width: 100%;">Tidak ada kuis yang ditemukan.</p>';
         return;
     }
 
     quizzes.forEach(quiz => {
         const card = document.createElement('div');
-        card.className = 'quiz-card-modern';
-        if(card)card.style.position = 'relative'; 
+        // Gunakan class viral-card agar seragam dengan section atas
+        card.className = 'viral-card'; 
+        card.style.position = 'relative'; 
+        card.style.minWidth = '280px'; // Memastikan ukuran konsisten di slider
         
+        // --- Tetap Pertahankan Logika Fungsional Mas ---
         const hasLiked = localStorage.getItem(`liked_${quiz.id}`);
         const heartClass = hasLiked ? 'fas fa-heart' : 'far fa-heart';
         const btnStyle = hasLiked ? 'color: #ff4757;' : '';
         
-        // Logika Badge Populer (Main > 1000 atau Suka > 1000)
         const playCount = quiz.results ? Object.keys(quiz.results).length : 0;
         const isPopular = (quiz.likes >= 1000 || playCount >= 1000);
+        
+        // 1. Badge Populer & Privat
         const popularBadge = isPopular ? `
-            <div class="badge-popular" style="position:absolute; top:10px; right:10px; background:linear-gradient(45deg, #FF512F, #DD2476); color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold; z-index:5; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3);">
+            <div style="position:absolute; top:10px; right:10px; background:linear-gradient(45deg, #FF512F, #DD2476); color:white; padding:4px 10px; border-radius:20px; font-size:0.65rem; font-weight:bold; z-index:5; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                 <i class="fas fa-fire"></i> POPULER
             </div>` : '';
-        const isPrivate = quiz.visibility === 'private';
-        const privateBadge = isPrivate ? `
-            <div class="badge-private" style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; z-index:5;">
-                <i class="fas fa-lock"></i> PRIVAT
-            </div>` : '';
 
-        // Logika Thumbnail (Kuisia Logo)
+        // 2. Logika Thumbnail (Kuisia Logo/Image)
         let thumbnailHTML = '';
         if (quiz.thumbnail) {
-            thumbnailHTML = `<img src="${quiz.thumbnail}" alt="Thumbnail" style="width:100%; height:160px; object-fit:cover; display:block;">`;
+            thumbnailHTML = `<img src="${quiz.thumbnail}" alt="Thumbnail" style="width:100%; height:150px; object-fit:cover;">`;
         } else {
             const gradient = generateGradient(quiz.title);
             thumbnailHTML = `
-                <div style="width:100%; height:160px; background: ${gradient}; display: flex; align-items: center; justify-content: center; padding: 20px;">
-                    <img src="Kuisia_White.png" alt="Kuisia Logo" style="width:200px; height:auto; opacity: 0.9;">
+                <div style="width:100%; height:150px; background: ${gradient}; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <img src="Kuisia_White.png" alt="Kuisia Logo" style="width:120px; height:auto; opacity: 0.8;">
                 </div>`;
         }
 
+        // --- Render Struktur Baru (Clean & Trendy) ---
         card.innerHTML = `
             ${popularBadge}
-            ${privateBadge}
-            <div class="card-thumbnail" style="margin: 0; padding: 0; overflow: hidden; border-radius: 12px 12px 0 0;">
+            <div class="card-header" onclick="window.location.href='kuis.html?id=${quiz.id}'" style="cursor:pointer; overflow:hidden; border-radius:15px 15px 0 0;">
                 ${thumbnailHTML}
+                <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); color:white; padding:3px 8px; border-radius:10px; font-size:0.7rem;">
+                    <i class="fas fa-play-circle"></i> ${playCount} Main
+                </div>
             </div>
-            <div class="card-body" style="padding: 15px; text-align: center;">
-                <h3 class="quiz-title" style="font-size: 1.1rem; margin-bottom: 5px; color: #333;">${quiz.title}</h3>
-                <p class="quiz-desc" style="font-size: 0.85rem; color: #666; margin-bottom: 12px; height: 40px; overflow: hidden;">${quiz.description || quiz.desc || "Tidak ada deskripsi."}</p>
+            
+            <div class="card-body" style="padding: 15px;">
                 
-                <div class="quiz-stats-meta" style="font-size: 0.75rem; color: #888; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <span><i class="fas fa-play-circle"></i> ${playCount} Main</span>
-                    <span><i class="fas fa-heart"></i> ${quiz.likes || 0} Suka</span>
-                </div>
+                <h4 style="font-size: 1rem; margin: 5px 0; color: #333; cursor:pointer;" onclick="window.location.href='kuis.html?id=${quiz.id}'">
+                    ${quiz.title}
+                </h4>
+                
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px; height: 35px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    ${quiz.description || quiz.desc || "Ayo uji kemampuanmu sekarang!"}
+                </p>
 
-                <div class="author-info" style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <span style="font-size: 0.65rem; color: #aaa; text-transform: uppercase; display: block;">Dibuat Oleh</span>
-                    <a href="author.html?id=${quiz.userId}" style="font-size: 0.9rem; font-weight: 600; color: var(--accent); text-decoration: none;">
-                        ${quiz.authorName || "Memuat..."}
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:5px;">
+                    <a href="author.html?id=${quiz.userId}" style="font-size: 0.7rem; font-weight: 700; color: var(--accent); text-decoration: none; text-transform: uppercase;">
+                        @${quiz.authorName || "Anonim"}
                     </a>
+                    <span style="font-size: 0.7rem; color: #888;"><i class="fas fa-heart"></i> ${quiz.likes || 0}</span>
                 </div>
 
-                <div class="card-actions" style="display: flex; gap: 8px;">
-                    <button class="action-btn love-btn" id="btn-like-${quiz.id}" onclick="likeQuiz('${quiz.userId}', '${quiz.id}')" style="${btnStyle} flex:1; background: #f8f9fa; border: 1px solid #ddd; padding: 8px; border-radius: 8px; cursor: pointer;">
+                <div class="card-actions" style="display: flex; gap: 8px; border-top: 1px solid #f0f0f0; padding-top: 12px;">
+                    <button id="btn-like-${quiz.id}" onclick="likeQuiz('${quiz.userId}', '${quiz.id}')" style="${btnStyle} flex:1; background: #f8f9fa; border: none; padding: 8px; border-radius: 10px; cursor: pointer;">
                         <i class="${heartClass}"></i>
                     </button>
-                    <button class="action-btn share-btn" onclick="shareQuiz('${quiz.id}', '${quiz.title}')" style="flex:1; background: #f8f9fa; border: 1px solid #ddd; padding: 8px; border-radius: 8px;">
+                    <button onclick="shareQuiz('${quiz.id}', '${quiz.title}')" style="flex:1; background: #f8f9fa; border: none; padding: 8px; border-radius: 10px; cursor: pointer; color:#666;">
                         <i class="fas fa-share-alt"></i>
                     </button>
-                    <a href="kuis.html?id=${quiz.id}" style="flex: 2; background: var(--accent); color: var(--white); text-decoration: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align:center;">Mainkan</a>
+                    <a href="kuis.html?id=${quiz.id}" style="flex: 2; background: var(--accent); color: white; text-decoration: none; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 0.85rem; text-align:center;">
+                        Main
+                    </a>
                 </div>
             </div>
         `;
         quizContainer.appendChild(card);
     });
 }
+
+window.scrollMain = function(direction) {
+    const container = document.getElementById('quiz-list');
+    const scrollAmount = 300; // Jarak geser setiap klik
+    
+    container.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+};
 
 // 5. SATU Blok DOMContentLoaded Utama
 document.addEventListener('DOMContentLoaded', () => {
@@ -188,26 +204,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Logika Stats ---
+    // --- Logika Stats Terpadu (Sekolah + Viral) ---
     const quizCounter = document.getElementById('user-count');
     const pengerjaanCounter = document.getElementById('admin-count');
+    
     if (quizCounter || pengerjaanCounter) {
-        database.ref('users').once('value').then((snapshot) => {
-            const users = snapshot.val();
-            if (!users) return;
+        // Kita ambil data dari 'users' dan 'quizzes_collections' secara bersamaan
+        Promise.all([
+            database.ref('users').once('value'),
+            database.ref('quizzes_collections').once('value')
+        ]).then(([snapshotUsers, snapshotViral]) => {
+            const users = snapshotUsers.val();
+            const viralQuizzes = snapshotViral.val();
 
             let totalKuis = 0, totalPengerjaan = 0;
-            Object.keys(users).forEach(uid => {
-                const qzs = users[uid].quizzes;
-                if (qzs) {
-                    totalKuis += Object.keys(qzs).length;
-                    Object.keys(qzs).forEach(qid => {
-                        if (qzs[qid].results) totalPengerjaan += Object.keys(qzs[qid].results).length;
-                    });
-                }
-            });
-            if (quizCounter) { quizCounter.setAttribute('data-target', totalKuis); animateCounter(quizCounter); }
-            if (pengerjaanCounter) { pengerjaanCounter.setAttribute('data-target', totalPengerjaan); animateCounter(pengerjaanCounter); }
-        });
+
+            // 1. Hitung dari Model Kuis Sekolah (dari folder users)
+            if (users) {
+                Object.keys(users).forEach(uid => {
+                    const qzs = users[uid].quizzes;
+                    if (qzs) {
+                        totalKuis += Object.keys(qzs).length;
+                        Object.keys(qzs).forEach(qid => {
+                            if (qzs[qid].results) totalPengerjaan += Object.keys(qzs[qid].results).length;
+                        });
+                    }
+                });
+            }
+
+            // 2. Hitung dari Model Kuis Viral (quizzes_collections)
+            if (viralQuizzes) {
+                const viralIds = Object.keys(viralQuizzes);
+                totalKuis += viralIds.length; // Tambah jumlah kuis viral
+                
+                viralIds.forEach(qid => {
+                    const q = viralQuizzes[qid];
+                    // Tambah jumlah pengerjaan dari stats.played
+                    if (q.stats && q.stats.played) {
+                        totalPengerjaan += q.stats.played;
+                    }
+                });
+            }
+
+            // 3. Jalankan Animasi
+            if (quizCounter) { 
+                quizCounter.setAttribute('data-target', totalKuis); 
+                animateCounter(quizCounter); 
+            }
+            if (pengerjaanCounter) { 
+                pengerjaanCounter.setAttribute('data-target', totalPengerjaan); 
+                animateCounter(pengerjaanCounter); 
+            }
+        }).catch(err => console.error("Gagal memuat statistik gabungan:", err));
     }
 
     const modal = document.getElementById('customModal');
@@ -820,3 +868,13 @@ window.playBatchQuiz = async function(quizId) {
     window.location.href = 'viral.html'; 
 };
 
+window.scrollViral = function(direction) {
+    const container = document.getElementById('viral-scroll-container');
+    // Kita geser sejauh 300px setiap klik
+    const scrollAmount = 320; 
+    
+    container.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+};

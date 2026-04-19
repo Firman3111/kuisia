@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin-style.css"> 
+    <link rel="icon" type="image/png" href="Kuisia_icon.png">
     <style>
         .quiz-container { max-width: 700px; margin: 50px auto; padding: 20px; }
         
@@ -307,7 +308,97 @@
         background: var(--accent);
     }
 
-    /* Responsif untuk HP */
+    :root {
+            --logo-size-splash: 140px; /* Ukuran logo di atas kuis */
+        }
+
+        /* Container Logo Animasi */
+        .splash-logo-container {
+            position: relative;
+            width: var(--logo-size-splash);
+            margin: 0 auto 15px auto;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .splash-logo-container.animate-bounce {
+            opacity: 1;
+            animation: popUpBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Shimmer Effect dengan Masking Logo */
+        .shimmer-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            -webkit-mask-image: url('Kuisia_color.png');
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: url('Kuisia_color.png');
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        .shimmer-layer::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            transform: skewX(-25deg);
+        }
+
+        .animate-shimmer .shimmer-layer::after {
+            animation: shimmerEffect 8s ease-in-out infinite; /* Buat infinite agar terus berkilau */
+        }
+
+        /* Styling Tagline */
+        .main-tagline-splash {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: -15px;
+            text-align: center;
+        }
+
+        .sub-tagline-splash {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #888;
+            opacity: 0;
+            transform: scale(1.5);
+            text-align: center;
+            margin-top: -5px;
+            margin-bottom: 40px;
+        }
+
+        .splash-word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(10px);
+            margin: 0 3px;
+        }
+
+        .splash-word.pop, .sub-tagline-splash.pop {
+            animation: wordPop 0.5s ease forwards;
+        }
+
+        /* Keyframes */
+        @keyframes wordPop { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popUpBounce { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shimmerEffect {
+            /* 0% sampai 30%: Proses kilatan berjalan (cepat) */
+            0% { left: -150%; }
+            30% { left: 150%; }
+            
+            /* 31% sampai 100%: Posisi tetap di luar (diam/jeda) */
+            100% { left: 150%; }
+        }
+
+        .splash-logo-container img {
+            display: block;
+            width: 100%;
+        }
+
     /* Responsif untuk HP - Pojok Kanan Atas */
     @media (max-width: 600px) {
         #global-review-info {
@@ -343,8 +434,28 @@
 <body style="background: var(--bg-admin);">
 
     <div class="quiz-container">
-        <div id="branding-logo-area" style="text-align: center; margin-bottom: 20px;"></div>
-        <h1 id="quiz-title-display" style="text-align: center; color: var(--accent); margin-bottom: 20px;">Memuat Kuis...</h1>
+        <div class="branding-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+    
+            <div id="branding-logo-area" style="text-align: center;"></div>
+
+            <div id="branding-divider" style="display: none; width: 2px; height: 50px; background: #e1e8f5; border-radius: 10px;"></div>
+
+            <div id="header-branding" style="text-align: center;">
+                <div id="splashLogo" class="splash-logo-container" style="margin: 0 auto 10px auto;">
+                    <div style="position: relative;">
+                        <img src="Kuisia_color.png" alt="Logo" style="width:100%; height:auto; display: block;">
+                        <div class="shimmer-layer"></div>
+                    </div>
+                </div>
+
+                <div class="main-tagline-splash">
+                    <span class="splash-word" id="sw1">Aku,</span>
+                    <span class="splash-word" id="sw2">Kamu,</span>
+                    <span class="splash-word" id="sw3">Kita</span>
+                </div>
+                <div id="subSplash" class="sub-tagline-splash" style="margin-bottom: 0;">Belajar Bersama</div>
+            </div>
+        </div>
 
         <div id="setup-container" class="question-card">
             <div id="wait-thumbnail-container" style="margin-bottom: 20px;">
