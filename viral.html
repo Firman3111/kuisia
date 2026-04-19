@@ -864,16 +864,20 @@
         // Inisialisasi saat halaman dibuka
         initializeQuiz();
 
-        window.openShareModal = function() {
+       window.openShareModal = function() {
             const finalScore = document.getElementById('final-score').innerText;
             const quizTitle = document.getElementById('wait-quiz-title').innerText;
-            const shareUrl = window.location.href;
-            const text = `Hore! Saya baru saja dapat skor ${finalScore} di kuis "${quizTitle}". Coba kalahkan skorku di sini: `;
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = quizId ? `${baseUrl}?id=${quizId}` : window.location.href;
 
-            // Set Link WA
+            // Tambahkan skor ke dalam teks pesan
+            const text = `🔥 GOKIL! Skor saya ${finalScore} di kuis "${quizTitle}". Berani lawan skor saya? Mainkan kuisnya di sini: `;
+
+            // Set Link WA (Teks + Link)
             document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(text + shareUrl)}`;
             
-            // Set Link FB
+            // Set Link FB (FB biasanya hanya menampilkan Preview Link, jadi text-nya opsional)
             document.getElementById('share-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
             document.getElementById('share-modal').classList.remove('hidden');
@@ -884,8 +888,14 @@
         };
 
         window.copyQuizLink = function() {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Link kuis berhasil disalin! Silakan bagikan ke temanmu.");
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = quizId ? `${baseUrl}?id=${quizId}` : window.location.href;
+
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("Link kuis berhasil disalin! Silakan bagikan ke temanmu.");
+            }).catch(err => {
+                console.error('Gagal menyalin link: ', err);
+            });
         };
 
         function runHeaderAnimation() {
