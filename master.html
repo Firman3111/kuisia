@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Control - Kuisia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="master-style.css">
+    <link rel="icon" type="image/png" href="Kuisia_icon.png">
+    <style>
+        /* Pembungkus Tabel dengan Scroll */
+        .table-responsive {
+            max-height: 400px; /* Atur tinggi maksimal sesuai selera */
+            overflow-y: auto;
+            border: 1px solid #edf2f7;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* Membuat Header Tabel Tetap di Atas (Sticky Header) */
+        .master-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8fafc; /* Sesuaikan dengan warna header Mas */
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mempercantik Scrollbar (Khusus Browser Chrome/Edge/Safari) */
+        .table-responsive::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Pastikan ini ada di file CSS Mas */
+        .table-responsive {
+            max-height: 450px; /* Batas tinggi scroll */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        /* Membuat Header Tabel Tetap Diam di Atas saat di-scroll */
+        .master-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #f8fafc; /* Warna background header */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        #table-inbox-body td:nth-child(4) {
+            max-width: 300px; /* Batasi lebar kolom pesan */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Akan muncul titik-titik (...) jika pesan kepanjangan */
+        }
+        .badge-count {
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto; /* Agar nempel ke kanan */
+            font-weight: bold;
+        }
+
+        /* CSS untuk Modal Center */
+        .modal-master {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none; /* Default sembunyi */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        /* Container Modal Utama */
+        .modal-master {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); /* Backdrop lebih gelap & elegan */
+            backdrop-filter: blur(4px); /* Efek blur kaca di belakang modal */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: all 0.3s ease;
+        }
+
+        /* Kotak Modal */
+        .modal-content {
+            background: #ffffff;
+            width: 90%;
+            max-width: 550px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden; /* Agar header tidak keluar dari border-radius */
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        @keyframes modalSlideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Header Modal */
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Body Modal */
+        .modal-body {
+            padding: 25px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .info-pengirim {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Kotak Pesan Longgar */
+        #detail-isi {
+            display: block;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #3b82f6;
+            margin: 15px 0;
+            font-style: italic;
+            color: #475569;
+            word-wrap: break-word;
+        }
+
+        /* Textarea Balasan */
+        #reply-text {
+            width: 100%;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            font-family: inherit;
+            resize: none;
+            transition: border-color 0.2s;
+            margin-top: 10px;
+        }
+
+        #reply-text:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Footer Modal */
+        /* Container Footer */
+        .modal-footer {
+            padding: 20px 25px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end; /* Tombol berjejer di kanan */
+        }
+
+        /* Base Style untuk Tombol Modal */
+        .modal-footer .btn-master {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        /* Tombol Batal (Netral & Minimalis) */
+        .btn-cancel-modal {
+            background: #ffffff;
+            color: #64748b;
+            border: 1.5px solid #e2e8f0 !important;
+            box-shadow: none !important;
+        }
+
+        .btn-cancel-modal:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-color: #cbd5e1 !important;
+        }
+
+        /* Tombol Balas Email (Menonjol/Action) */
+        #btn-reply-email {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+
+        #btn-reply-email:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+            filter: brightness(1.1);
+        }
+
+        #btn-reply-email:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="master-sidebar" id="master-sidebar">
+        <div class="sidebar-header">
+            <h2 style="color: var(--master-gold);"><i class="fas fa-crown"></i> Master</h2>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active"><a href="#" id="nav-dashboard"><i class="fas fa-chart-line"></i> Ringkasan Sistem</a></li>
+                <li id="nav-inbox"><a href="#"><i class="fas fa-envelope"></i><span>Pesan Masuk</span><span id="badge-inbox" class="badge-count" style="display: none;">0</span></a></li>
+                <li><a href="#" id="nav-batch-quiz"><i class="fas fa-rocket"></i> Batch Kuis Viral</a></li>
+                <li><a href="#" id="nav-ads"><i class="fas fa-ad"></i> Manajemen Iklan</a></li>
+                <li><a href="#" id="nav-settings"><i class="fas fa-cog"></i> Pengaturan Global</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-migrasi" onclick="jalankanMigrasiConfig()">
+                <i class="fas fa-tools"></i> Jalankan Migrasi
+            </button>
+            
+            <a href="admin.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Dashboard Author
+            </a>
+        </div>
+    </aside>
+
+    <main class="master-content">
+        <header class="mobile-header">
+            <button style="cursor: pointer;" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <span>Master Control</span>
+            <div style="width: 40px;"></div>
+        </header>
+
+        <div class="master-container">
+            <section id="section-dashboard" class="menu-section">
+                <header class="content-header" style="margin-bottom: 30px;">
+                    <h1>Dashboard Ringkasan</h1>
+                    <p>Status operasional dan data author Kuisia.</p>
+                </header>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
+                    <div class="master-card" style="margin-bottom: 0; padding: 25px;">
+                        <h4 style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">Total Author</h4>
+                        <h2 id="stat-total-user" style="color: var(--master-accent); font-size: 2rem;">0</h2>
+                    </div>
+                    <div class="master-card" style="margin-bottom: 0; padding: 25px;">
+                        <h4 style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">User Premium 💎</h4>
+                        <h2 id="stat-total-premium" style="color: var(--master-gold); font-size: 2rem;">0</h2>
+                    </div>
+                    <div class="master-card" style="margin-bottom: 0; padding: 25px;">
+                        <h4 style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">Total Kuis Publik</h4>
+                        <h2 id="stat-total-quiz" style="color: #10b981; font-size: 2rem;">0</h2>
+                    </div>
+                    <div class="master-card" style="margin-bottom: 0; padding: 25px;">
+                        <h4 style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">Pesan Baru</h4>
+                        <h2 id="stat-new-messages" style="color: var(--master-danger); font-size: 2rem;">0</h2>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #64748b;">Sebaran Keanggotaan</h3>
+                        <canvas id="membershipChart"></canvas>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #64748b;">Pertumbuhan User</h3>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="master-card" id="section-users-table">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom:15px;">
+                        <h3><i class="fas fa-user-shield"></i> Daftar Author Aktif</h3>
+                        <div class="search-box">
+                            <input type="text" id="search-user" placeholder="Cari nama atau email..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="master-table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Expired</th>
+                                    <th>Opsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="master-card" style="margin: 25px 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 25px 0;"><i class="fas fa-book"></i> Monitoring Kuis Publik</h3>
+
+                    <div style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                        <input type="text" id="search-quiz" placeholder="Cari judul kuis atau kategori..." 
+                            style="padding: 8px 12px 8px 35px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-family: 'Poppins';">
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="master-table">
+                            <thead>
+                                <tr>
+                                    <th>Judul Kuis</th>
+                                    <th>Kategori</th>
+                                    <th>Jumlah Soal</th>
+                                    <th>Dibuat Oleh</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batch-quiz-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-inbox" class="menu-section" style="display:none;">
+                <header class="content-header">
+                    <h1>Pesan Masuk</h1>
+                    <p>Laporan dan saran dari pengguna.</p>
+                </header>
+                
+                <div class="master-card">
+                    <div class="table-responsive">
+                        <table class="master-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Nama</th>
+                                    <th>Email</th>
+                                    <th>Pesan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-inbox-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-ads" class="menu-section" style="display:none;">
+                <header class="content-header">
+                    <h1>Manajemen Iklan</h1>
+                    <p>Atur Branding, Banner Slider, dan Video Ads.</p>
+                </header>
+
+                <div class="master-card" style="margin-bottom: 20px;">
+                    <h3>🚀 Input Iklan Baru</h3>
+                    <form id="form-ads-new">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-size:0.85rem; color:#64748b;">Nama Pengiklan</label>
+                            <input type="text" id="new-ad-client" placeholder="Contoh: Toko Buku Pintar" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <label style="display:block; font-size: 0.8rem; color:#64748b;">Mulai Tayang</label>
+                                <input type="date" id="new-ad-start" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.8rem; color:#64748b;">Berakhir</label>
+                                <input type="date" id="new-ad-end" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-size:0.85rem; color:#64748b;">Tipe Iklan</label>
+                            <select id="new-ad-type" onchange="toggleAdInput()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                                <option value="banner">Banner Slider (Gambar)</option>
+                                <option value="video">Video Overlay (Popup)</option>
+                                <option value="branding">Iklan Branding (Full Site Theme)</option>
+                            </select>
+                        </div>
+                        
+                        <div id="input-banner-group" style="display:block;">
+                            <label style="display:block; font-size: 0.8rem; color:#64748b;">Upload Banner (Gambar)</label>
+                            <input type="file" id="file-ad-banner" accept="image/*" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; background: white;">
+                            <p style="text-align:center; font-size:0.7rem; color:#94a3b8;">-- ATAU --</p>
+                            <input type="text" id="new-ad-content" placeholder="URL Gambar Banner" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+                            <input type="text" id="new-ad-link" placeholder="Link Tujuan (WhatsApp/Website)" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+
+                        <div id="input-video-group" style="display:none;">
+                            <label style="display:block; font-size: 0.8rem; color:#64748b;">Pengaturan Video</label>
+                            <input type="text" id="new-ad-video" placeholder="ID YouTube (Contoh: dQw4w9WgXcQ)" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                            <p style="font-size:0.7rem; color:#64748b; margin-top:5px;">*Gunakan ID video YouTube agar load lebih ringan.</p>
+                        </div>
+
+                        <div id="input-branding-group" style="display:none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                <div>
+                                    <label style="font-size: 0.8rem;">Warna Brand</label>
+                                    <input type="color" id="new-ad-color" style="width:100%; height:40px; border:none; padding:0; background:none;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem;">Warna Teks</label>
+                                    <input type="color" id="new-ad-color-text" value="#ffffff" style="width:100%; height:40px; border:none; padding:0; background:none;">
+                                </div>
+                            </div>
+                            <label style="display:block; font-size: 0.8rem; color:#64748b;">Upload Logo Brand</label>
+                            <input type="file" id="file-ad-logo" accept="image/*" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; background: white;">
+                            <input type="text" id="new-ad-brand-logo" placeholder="URL Logo PNG Transparan" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+                            <textarea id="new-ad-motivation" placeholder="Kata-kata Motivasi..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></textarea>
+                        </div>
+
+                        <div id="input-branding-group" style="display:none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                <div>
+                                    <label style="font-size: 0.8rem;">Warna Brand</label>
+                                    <input type="color" id="new-ad-color" style="width:100%; height:40px; border:none; padding:0; background:none;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem;">Warna Teks</label>
+                                    <input type="color" id="new-ad-color-text" value="#ffffff" style="width:100%; height:40px; border:none; padding:0; background:none;">
+                                </div>
+                            </div>
+                            <input type="text" id="new-ad-brand-logo" placeholder="URL Logo PNG Transparan" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+                            <textarea id="new-ad-motivation" placeholder="Kata-kata Motivasi..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></textarea>
+                        </div>
+
+                        <button type="button" onclick="saveNewAd()" style="width:100%; padding:12px; margin-top:20px; background:#8458B3; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Publish Iklan</button>
+                    </form>
+                </div>
+
+                <div class="master-card">
+                    <h3>📋 Daftar Iklan Aktif</h3>
+                    <div class="table-responsive">
+                        <table class="master-table">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Tipe</th>
+                                    <th>Periode</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ads-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-settings" class="menu-section" style="display:none;">
+                <header class="content-header">
+                    <h1>Pengaturan Global</h1>
+                    <p>Konfigurasi sistem Kuisia.</p>
+                </header>
+
+                <div class="master-card">
+                    <h3><i class="fas fa-cogs"></i> Konfigurasi Sistem</h3>
+                    <div style="margin-top: 20px;">
+                        <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+                            <div>
+                                <strong>Mode Maintenance</strong>
+                                <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Matikan akses kuis untuk sementara bagi user.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="set-maintenance" onchange="updateGlobalSetting('maintenance', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item" style="padding: 15px 0;">
+                            <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:10px;">Pengumuman Dashboard User</label>
+                            <textarea id="set-announcement" rows="3" style="width:100%; border-radius:8px; border:1px solid #ddd; padding:10px;" placeholder="Tulis info penting untuk semua author..."></textarea>
+                            <button onclick="updateGlobalSetting('announcement', document.getElementById('set-announcement').value)" style="margin-top:10px; padding:8px 20px; background:var(--master-accent); color:white; border:none; border-radius:5px; cursor:pointer;">Update Info</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item" style="padding: 15px 0; border-bottom: 1px solid #eee;">
+                        <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:10px;">Teks Berjalan (Beranda)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="set-running-text" style="flex:1; border-radius:8px; border:1px solid #ddd; padding:10px;" placeholder="Contoh: Kuis CPNS 2026 kini tersedia! Cek sekarang...">
+                            <button onclick="updateGlobalSetting('running_text', document.getElementById('set-running-text').value)" class="btn-master" style="padding:10px 15px;">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-batch-quiz" class="menu-section" style="display: none;">
+                <div class="admin-card" style="background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <div style="background: var(--master-gold); padding: 12px; border-radius: 12px; color: white;">
+                            <i class="fas fa-file-import" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; color: #333;">Batch Quiz Importer</h3>
+                            <p style="margin: 0; font-size: 0.8rem; color: #666;">Masukkan data JSON untuk mengunggah kuis viral secara massal.</p>
+                        </div>
+                    </div>
+
+                    <textarea id="json-input" rows="12" 
+                        style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #eee; font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f9f9f9; outline: none;"
+                        placeholder='{
+                        "title": "Judul Kuis Viral",
+                        "category": "Viral",
+                        "thumbnail": "https://link-gambar.com/foto.jpg",
+                        "questions": [
+                            { "text": "Soal 1?", "options": ["A", "B"], "answer": "A" }
+                        ]
+                        }'>
+                    </textarea>
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button onclick="importBatchQuiz()" class="btn-primary" style="flex: 2; padding: 12px; font-weight: 600; background: var(--master-gold); border: none; color: black; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-cloud-upload-alt"></i> Unggah Sekarang
+                        </button>
+                        <button onclick="document.getElementById('json-input').value=''" style="flex: 1; padding: 12px; background: #eee; border: none; border-radius: 8px; color: #666; cursor: pointer;">
+                            Bersihkan
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal-premium" class="master-modal">
+        <div class="master-modal-content">
+            <div class="master-modal-header">
+                <h2>Atur Akses Premium</h2>
+                <button class="close-btn" onclick="closeMasterModal()">&times;</button>
+            </div>
+            <div class="master-modal-body">
+                <input type="hidden" id="target-uid">
+                
+                <div class="master-form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Status Member</label>
+                    <select id="select-status" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="false">Free Member</option>
+                        <option value="true">Premium Member 💎</option>
+                    </select>
+                </div>
+
+                <div class="master-form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Tanggal Berakhir</label>
+                    <input type="date" id="input-expiry" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+
+                <button class="btn-save" onclick="savePremiumSettings()" style="width: 100%; padding: 12px; border-radius: 8px; background: var(--master-accent); color: white; border: none; font-weight: 600; cursor: pointer;">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-inbox" class="modal-master">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-envelope-open-text" style="color: #3b82f6;"></i> Detail Pesan</h3>
+                <span class="close-modal" onclick="tutupModalInbox()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="info-pengirim">
+                    <p style="margin: 0;"><strong>Dari:</strong> <span id="detail-nama"></span></p>
+                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.85rem;"><i class="fas fa-at"></i> <span id="detail-email"></span></p>
+                </div>
+                
+                <label style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700;">Isi Pesan:</label>
+                <div id="detail-isi"></div>
+
+                <div style="margin-top: 25px;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">Tulis Balasan:</label>
+                    <textarea id="reply-text" rows="4" placeholder="Ketik pesan balasan di sini..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="tutupModalInbox()" class="btn-master btn-cancel-modal">
+                    Batal
+                </button>
+                
+                <button id="btn-reply-email" class="btn-master">
+                    <i class="fas fa-paper-plane"></i> Balas Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="master-script.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('master-sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

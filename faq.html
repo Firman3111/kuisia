@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Mengubah max-width dari 800px menjadi 640px (80% dari 800px) */
+        .faq-container { 
+            max-width: 640px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
+        }
+        
+        .faq-item { border-bottom: 1px solid #eee; margin-bottom: 10px; }
+        
+        .faq-question { 
+            width: 100%; 
+            padding: 20px; 
+            background: none; 
+            border: none; 
+            text-align: left; 
+            font-weight: 600;
+            font-size: 18px; 
+            color: #8458B3;
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; /* Menjaga agar ikon + sejajar secara vertikal */
+            display: flex;
+        }
+
+        /* Animasi rotasi panah saat aktif */
+            .faq-question.active i {
+                transform: rotate(180deg);
+            }
+        
+        .faq-answer { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: 0.3s; 
+            padding: 0 20px; 
+        }
+
+        .faq-answer p {
+            padding: 15px 20px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <div style="padding: 40px 10% 0 10%; text-align: center; max-width: 1400px; margin: 0 auto;">
+        <h1 style="color: var(--accent); margin-bottom: 20px;">Pusat Bantuan Kuisia</h1>
+        <p style="color: var(--text); line-height: 1.6; margin-bottom: 15px;">
+            Selamat datang di pusat bantuan Kuisia. Kami telah mengumpulkan jawaban dari pertanyaan-pertanyaan yang paling sering diajukan oleh pengguna kami untuk membantu Anda mendapatkan pengalaman terbaik.
+        </p>
+        <p style="color: var(--text); line-height: 1.6;">
+            Jika Anda tidak menemukan jawaban yang Anda cari dalam daftar di bawah, jangan ragu untuk menghubungi tim dukungan kami melalui kontak yang tersedia di bagian footer. Kami siap membantu Anda setiap saat.
+        </p>
+    </div>
+
+    <main style="flex: 1;">
+        <div class="faq-container">
+            <h2 style="text-align: center; color: #8458B3; margin-bottom: 30px;">Pertanyaan Sering Diajukan</h2>
+
+            <div class="faq-item">
+                <button class="faq-question">Apa itu Kuisia? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Kuisia adalah platform kuis edukatif berbasis web yang dirancang untuk membantu guru, pengajar, maupun komunitas dalam membuat latihan soal yang interaktif, menyenangkan, dan mudah digunakan.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Apa tujuan utama platform ini? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Tujuan kami adalah mendigitalisasi proses evaluasi belajar. Dengan Kuisia, pengajar bisa mendapatkan hasil nilai secara real-time sementara siswa bisa mengerjakan soal dengan pengalaman seperti bermain game.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Bagaimana cara membuat kuis sebagai Admin? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Caranya sangat mudah: Masuk ke halaman Dashboard Admin, klik "Buat Kuis Baru", isi judul kuis, lalu tambahkan pertanyaan baik berupa Pilihan Ganda maupun Essay. Setelah selesai, kuis bisa langsung dibagikan melalui link.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Bagaimana cara siswa mengerjakan kuis? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Siswa cukup membuka link kuis yang dibagikan oleh pengajar, memasukkan identitas (Nama, Kelas, No Absen), memilih avatar (untuk kuis privat), dan langsung mulai menjawab soal.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Apakah platform Kuisia berbayar? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Kuisia menyediakan layanan <strong>Gratis</strong> untuk penggunaan standar. Namun, kami juga menyediakan paket <strong>Pro</strong> bagi Anda yang membutuhkan fitur eksklusif seperti Kuis Privat, Tanpa Iklan, dan Kapasitas Gambar yang lebih banyak.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Apa perbedaan Kuis Publik dan Kuis Privat? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Kuis Publik dapat diakses oleh siapa saja. Sedangkan Kuis Privat hanya bisa diakses melalui link khusus dengan fitur tambahan seperti pemilihan Avatar dan Waiting Room yang lebih eksklusif.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Bisakah saya menambahkan gambar dalam soal? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Tentu saja! Admin bisa mengunggah hingga 3 gambar dalam satu kuis (untuk akun Pro) untuk memberikan visualisasi yang lebih jelas pada pertanyaan.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Apakah hasil kuis tersimpan secara otomatis? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Ya, setiap jawaban siswa akan tersimpan di database kami. Admin dapat melihat rekap skor, jawaban essay, hingga waktu pengerjaan setiap siswa melalui halaman Rekap Nilai.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Perangkat apa yang mendukung Kuisia? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Kuisia dapat diakses melalui browser di perangkat apa pun, mulai dari Smartphone (Android/iOS), Tablet, hingga Laptop dan PC tanpa perlu menginstal aplikasi tambahan.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Bagaimana jika saya lupa kata sandi akun Admin? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer">
+                    <p>Anda dapat menggunakan fitur "Lupa Sandi" pada halaman Login. Instruksi pemulihan akan dikirimkan ke email yang terdaftar pada akun Kuisia Anda.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; margin-bottom: 40px; padding: 20px; border-radius: 15px;">
+                <p style="color: #666; margin-bottom: 15px;">Punya pertanyaan lain yang belum terjawab?</p>
+                <a href="about.html#contact-form" class="btn-primary" style="text-decoration: none; display: inline-block; width: auto; padding: 12px 30px;">
+                    <i class="fas fa-envelope"></i> Hubungi Kami
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // 1. LOGIKA ACCORDION FAQ
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Toggle class 'active' pada tombol untuk animasi rotasi icon panah
+                btn.classList.toggle('active');
+                
+                const answer = btn.nextElementSibling;
+                
+                // Logika buka-tutup dengan smooth transition
+                if (answer.style.maxHeight) {
+                    answer.style.maxHeight = null;
+                } else {
+                    // Menutup semua FAQ lain yang sedang terbuka (opsional, agar rapi)
+                    document.querySelectorAll('.faq-answer').forEach(el => el.style.maxHeight = null);
+                    document.querySelectorAll('.faq-question').forEach(el => el.classList.remove('active'));
+                    
+                    // Buka jawaban yang diklik
+                    btn.classList.add('active');
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                }
+            });
+        });
+
+        // 2. LOGIKA MOBILE MENU & OVERLAY
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('nav-overlay');
+
+        if (menuBtn && navMenu && overlay) {
+            // Membuka menu
+            menuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+
+            // Menutup menu saat klik di area gelap (overlay)
+            overlay.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+
+            // Menutup menu saat klik pada link navigasi (agar tidak menutupi layar)
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            });
+        }
+        
+    </script>
+</body>
+</html>

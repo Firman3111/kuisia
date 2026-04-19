@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        main {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        align-items: stretch;
+    }
+
+    .pricing-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 24px;
+    text-align: center;
+    /* Tambahkan transition agar gerakannya mulus */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer; /* Memberi petunjuk bahwa kartu bisa diklik/interaktif */
+    }
+
+    /* Efek Hover untuk kartu biasa */
+    .pricing-card:hover {
+        transform: scale(1.03); /* Membesar sedikit (3%) */
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        border-color: var(--accent);
+    }
+
+    /* Efek Hover khusus kartu Featured (PRO) */
+    .pricing-card.featured:hover {
+        /* Karena kartu Pro sudah punya scale 1.05 secara default, 
+        saat hover kita naikkan sedikit lagi agar tetap ada efek geraknya */
+        transform: scale(1.08); 
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Kartu Unggulan (Pro) */
+    .pricing-card.featured {
+        background: #270c30; /* Dark background seperti di gambar */
+        color: white;
+        transform: scale(1.05);
+        border: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        position: relative;
+    }
+
+    .pricing-card.featured .price { color: #fff; }
+    .pricing-card.featured .btn-primary { 
+        background: white; 
+        color: #1a1a1a; 
+    }
+
+    .price {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 20px 0;
+        color: var(--accent);
+    }
+
+    .price span { font-size: 1rem; color: #888; }
+
+    .features-list {
+    list-style: none;
+    margin: 30px 0;
+    padding: 0;
+    text-align: center; /* Membuat teks ke tengah */
+    flex-grow: 1;
+    }
+
+    .features-list li {
+        padding: 12px 0; /* Memberi ruang untuk garis */
+        color: inherit;
+        opacity: 0.9;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* Garis tipis transparan */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Hilangkan garis di list terakhir */
+    .features-list li:last-child {
+        border-bottom: none;
+    }
+
+    /* Style untuk icon agar tetap manis di atas teks atau di samping */
+    .features-list li i {
+        color: #2ecc71;
+        font-size: 0.9rem;
+    }
+
+    /* Khusus untuk kartu Featured (Gelap), garisnya harus terang */
+    .pricing-card.featured .features-list li {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Pengaturan jarak antar kartu */
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px; /* Jarak standar untuk Desktop */
+        align-items: stretch;
+    }
+
+    /* Khusus Mode HP / Layar Kecil */
+    @media (max-width: 768px) {
+        .pricing-grid {
+            /* Kita berikan jarak vertikal 40px agar kartu tidak terlihat menempel */
+            gap: 40px; 
+        }
+
+        .pricing-card.featured {
+            /* Menghilangkan efek scale di HP agar tidak meluber ke samping, 
+            tapi tetap kita beri margin ekstra sebagai penanda kartu unggulan */
+            transform: scale(1);
+            margin: 10px 0;
+        }
+    }
+
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu">
+            <a href="pricing.html">Pricing</a>
+            <a href="faq.html">FAQ</a>
+            <a href="About.html">About</a>
+        </nav>
+
+        <div class="header-right">
+            <a href="login.html" class="btn-primary">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    
+
+    <main>
+    <div style="padding: 40px 10% 0 10%; text-align: center; max-width: 1400px; margin: 0 auto; margin-bottom: 80px;">
+        <h1 style="font-size: 2.5rem; color: var(--accent); margin-bottom: 20px;">Pilih Paket Belajar Anda</h1>
+        <p style="color: var(--text); line-height: 1.6; margin-bottom: 15px;">
+            Kuisia menyediakan berbagai pilihan paket yang dirancang khusus untuk kebutuhan individu hingga skala institusi pendidikan 
+            yang lebih besar. Pilih paket yang paling sesuai dengan kebutuhan Anda saat ini. Anda dapat meningkatkan paket kapan saja, 
+            untuk mendapatkan akses ke fitur-fitur analisis yang lebih mendalam.
+        </p>
+    </div>
+
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <h3>Standard</h3>
+            <div class="price">Rp 0 <span>/selamanya</span></div>
+            <ul class="features-list">
+                <li><i class="fas fa-check-circle"></i> Kuis Publik Tak Terbatas</li>
+                <li><i class="fas fa-check-circle"></i> Max. 1 Gambar per Kuis</li>
+                <li><i class="fas fa-check-circle"></i> Dashboard Admin Dasar</li>
+                <li><i class="fas fa-check-circle"></i> Rekap Nilai Standar</li>
+            </ul>
+            <a href="login.html" class="btn-primary" style="background: #f4f4f4; color: #333; border: none;">Mulai Gratis</a>
+        </div>
+
+        <div class="pricing-card featured">
+            <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 5px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
+                PALING POPULER
+            </div>
+            <h3>Kuisia Pro</h3>
+            <div class="price">Rp 25rb <span>/bulan</span></div>
+            <ul class="features-list">
+                <li><i class="fas fa-check-circle"></i> Semua Fitur Standard</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Kuis Privat (Link Khusus)</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>Fitur Avatar & Waiting Room</strong></li>
+                <li><i class="fas fa-check-circle"></i> Max. 3 Gambar per Kuis</li>
+                <li><i class="fas fa-check-circle"></i> Analisis Nilai Mendalam</li>
+                <li><i class="fas fa-check-circle"></i> Tanpa Iklan & Watermark</li>
+            </ul>
+            <button onclick="openModal()" class="btn-primary">Dapatkan Akses Sekarang</button>
+        </div>
+    </div>
+</main>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+   <div id="pricing-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">Upgrade ke Paket Pro</h2>
+            <p id="modal-desc" style="margin: 15px 0; font-size: 0.9rem; color: #666;"></p>
+            
+            <form id="pro-form" style="text-align: left;">
+                <input type="text" id="user-name" placeholder="Nama Lengkap" required style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="number" id="user-wa" placeholder="Nomor WhatsApp" required style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                
+                <label style="font-weight: bold; font-size: 0.9rem;">Metode Pembayaran:</label>
+                <select id="payment-method" style="width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 20px; border-radius: 8px;">
+                    <option value="qris">QRIS (OVO/Gopay/Dana/Shopee)</option>
+                    <option value="va">Virtual Account Bank</option>
+                </select>
+
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">Dapatkan Akses Sekarang</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('pricing-modal');
+        const closeBtn = document.querySelector('.close-btn');
+        const proForm = document.getElementById('pro-form');
+
+        function openModal(title, desc) {
+            document.getElementById('modal-title').innerText = "Upgrade ke Paket" +title;
+            document.getElementById('modal-desc').innerText = desc;
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = () => modal.style.display = 'none';
+        window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
+
+        proForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = proForm.querySelector('button[type="submit"]');
+
+            // --- TAMBAHKAN BARIS INI ---
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<span class="spinner"></span> Memproses...';
+            // ---------------------------
+
+            const nama = document.getElementById('user-name').value;
+            const wa = document.getElementById('user-wa').value;
+            const metode = document.getElementById('payment-method').value;
+
+            setTimeout(() => {
+                const message = `Halo, saya ${nama}. Saya ingin berlangganan Paket Pro via ${metode}. Nomor WA saya: ${wa}`;
+                const waUrl = `https://wa.me/628123456789?text=${encodeURIComponent(message)}`;
+                
+                window.open(waUrl, '_blank');
+                
+                // Reset tombol
+                modal.style.display = 'none';
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.innerHTML = 'Dapatkan Akses Sekarang';
+            }, 1500); 
+        });
+
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('nav-overlay');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,168 @@
+/* auth-style.css - Versi Clean & Center */
+:root {
+    --primary: #A0D2EB;    
+    --accent: #8458B3;     
+    --accent-light: #DDBDF4;
+    --bg-admin: #F4F7FE;   
+    --text: #494D5F;
+    --white: #ffffff;
+    --shadow-pro: 0 10px 30px rgba(73, 77, 95, 0.1);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box; /* Mencegah padding merusak lebar elemen */
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-admin);
+    /* Menggunakan Flexbox di body adalah cara paling ampuh untuk centering */
+    display: flex;
+    align-items: center;
+    text-align: center;    /* Memastikan teks berada di tengah horizontal */
+    min-height: 100vh;
+    flex-direction: column; /* Mengubah susunan menjadi atas-bawah */
+    justify-content: space-between; /* Header atas, footer bawah */
+    min-height: 100vh;
+}
+
+.auth-header {
+    width: 100%;
+    padding: 30px 40px;
+    font-size: 2.5rem;       /* Dibuat lebih besar (tadi 1.5rem) */
+    font-weight: 700;      /* Lebih tegas */
+    color: var(--accent);
+    text-align: center;    /* Memastikan teks berada di tengah horizontal */
+    margin-bottom: -100px;
+}
+
+.auth-header h3{
+    font-size: 1.3rem;
+    font-weight: 400; 
+    color: var(--text);
+    text-align: center;
+}
+
+.auth-tagline {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-tagline h1 {
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 5px;
+
+}
+
+.auth-tagline p {
+    color: #888;
+}
+
+.auth-container {
+    flex: 1; /* Agar kontainer login tetap di tengah */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-box {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-pro);
+    text-align: center;
+    border: 1px solid rgba(132, 88, 179, 0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+
+#auth-title {
+    color: var(--accent);
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+#auth-desc {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.input-group input {
+    width: 100%; /* Pastikan mengisi penuh box */
+    padding: 12px 15px;
+    border: 2px solid #eef0f7;
+    border-radius: 10px;
+    transition: 0.3s;
+    outline: none;
+    font-family: inherit;
+}
+
+.input-group input:focus {
+    border-color: var(--accent);
+    background: #fff;
+}
+
+.btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: #6a4691;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(132, 88, 179, 0.3);
+}
+
+.auth-footer {
+    margin-top: 25px;
+    font-size: 0.85rem;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.auth-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.hidden { 
+    display: none !important; 
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-footer-bottom {
+    padding: 20px;
+    color: #aaa;
+    font-size: 0.8rem;
+}

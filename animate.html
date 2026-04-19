@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuisia - Belajar Bersama</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #9665ca;
+            --accent-color: #dd98d4;
+            --text-dark: #4a4a4a;
+            --logo-size: 360px;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            /* Font dasar Montserrat untuk tampilan modern */
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #f3e8ff, #e0f2fe, #fce7f3, #f0f9ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Logo Section */
+        .logo-container {
+            position: relative;
+            width: var(--logo-size);
+            opacity: 0;
+            transform: scale(0);
+            margin-bottom: 25px;
+        }
+
+        .logo-container.animate-bounce {
+            opacity: 1;
+            animation: popUpBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .shimmer-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            -webkit-mask-image: url('logo.png');
+            mask-image: url('logo.png');
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+        }
+
+        .shimmer-layer::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            transform: skewX(-25deg);
+        }
+
+        .animate-shimmer .shimmer-layer::after {
+            animation: shimmerEffect 1.2s ease-in-out forwards;
+        }
+
+        /* Tagline Section */
+        .tagline-container {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .main-tagline {
+            /* Menggunakan Font Pacifico */
+            font-family: 'Pacifico', cursive;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .sub-tagline {
+            font-family: 'Chewy', cursive;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            font: weight 200px;
+            opacity: 0;
+            transform: scale(2);
+        }
+
+        .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(15px);
+            margin: 0 5px;
+        }
+
+        /* Animation Classes */
+        .word.pop { animation: wordPop 0.5s ease forwards; }
+        .sub-tagline.pop { animation: wordPop 0.6s ease forwards; }
+
+        @keyframes wordPop {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes popUpBounce {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shimmerEffect {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Button */
+        .btn-explore {
+            padding: 16px 40px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(177, 116, 243, 0.2);
+        }
+
+        .btn-explore.show { opacity: 1; transform: translateY(0); }
+        .btn-explore:hover { 
+            transform: translateY(-3px) scale(1.05); 
+            box-shadow: 0 10px 25px rgba(177, 116, 243, 0.4); 
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="logoContainer" class="logo-container">
+        <div style="position: relative;">
+            <img src="Kuisia_color.png" alt="Logo" style="width:100%; height:auto; display:block;">
+            <div class="shimmer-layer"></div>
+        </div>
+    </div>
+
+    <div class="tagline-container">
+        <div class="main-tagline">
+            <span class="word" id="w1">Aku,</span>
+            <span class="word" id="w2">Kamu,</span>
+            <span class="word" id="w3">Kita</span>
+        </div>
+        <div class="sub-tagline" id="subTag" style="font-weight: 700;">Belajar Bersama</div>
+    </div>
+
+    <button id="exploreBtn" class="btn-explore">Yuk Mulai!</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const logo = document.getElementById('logoContainer');
+            const w1 = document.getElementById('w1');
+            const w2 = document.getElementById('w2');
+            const w3 = document.getElementById('w3');
+            const sub = document.getElementById('subTag');
+            const btn = document.getElementById('exploreBtn');
+
+            // Jalankan urutan animasi
+            setTimeout(() => logo.classList.add('animate-bounce'), 300);
+            setTimeout(() => logo.classList.add('animate-shimmer'), 1500);
+
+            // Munculkan tagline per kata
+            setTimeout(() => w1.classList.add('pop'), 2200);
+            setTimeout(() => w2.classList.add('pop'), 2500);
+            setTimeout(() => w3.classList.add('pop'), 2800);
+
+            // Munculkan sub-tagline
+            setTimeout(() => sub.classList.add('pop'), 3400);
+
+            // Munculkan tombol terakhir
+            setTimeout(() => btn.classList.add('show'), 4000);
+
+            // FUNGSI KLIK UNTUK PINDAH HALAMAN
+            btn.addEventListener("click", function() {
+                window.location.href = "index.html"; 
+            });
+        });
+    </script>
+</body>
+</html>

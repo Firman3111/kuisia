@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil Author | Kuisia</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Gradien Latar Belakang Profil */
+        .profile-hero {
+            background: linear-gradient(135deg, #bba8cf, #A594F9);
+            padding: 80px 10%;
+            text-align: center;
+            color: white;
+        }
+        .profile-pic {
+            width: 300px; height: 300px; border-radius: 50%;
+            border: 16px solid rgba(255, 255, 255, 0.3); object-fit: cover;
+            margin-bottom: 20px;
+        }
+        .quiz-section { padding: 60px 10%; }
+        .btn-social, .btn-gift, .btn-share {
+            text-decoration: none;
+            background: #8458B3; 
+            border: none; 
+            color: white; 
+            padding: 15px 30px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .btn-social:hover, .btn-gift:hover, .btn-share:hover {
+            background: rgba(238, 218, 255, 0.644);
+        }
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f0f0f0; /* Warna latar belakang tombol */
+            color: #8458B3;      /* Warna ikon */
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .icon-btn:hover {
+            background: #8458B3;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(132, 88, 179, 0.3);
+        }
+
+        /* Container utama modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Efek gelap transparan di belakang */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Sembunyikan modal saat tidak digunakan */
+        .modal.hidden {
+            display: none !important;
+        }
+
+        /* Kotak konten modal */
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative; /* Penting agar close-btn bisa diposisikan absolut */
+            padding: 30px; /* Sedikit lebih lebar untuk memberi ruang X */
+        }
+
+        /* Tombol di dalam modal */
+        .modal-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-main {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover { color: #333; }
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <header class="admin-header"> 
+        <div class="header-brand">
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+        </div>
+        
+        <a href="index.html" style="color:white; text-decoration:none;">Beranda</a>
+    </header>
+
+    <section class="profile-hero">
+        <img id="author-photo" class="profile-pic">
+        <h1 id="author-name">Memuat...</h1>
+        <p id="author-job" style="font-weight: 600;"></p>
+        <p id="author-bio" style="max-width: 600px; margin: 20px auto; opacity: 0.9;"></p>
+        <div class="author-actions" style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
+            <a id="btn-gift" href="#" target="_blank" class="icon-btn" style="display:none;" title="Dukung Author">
+                <i class="fas fa-hand-holding-heart"></i>
+            </a>
+
+            <button onclick="bagikanProfil()" class="icon-btn" title="Bagikan Profil">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+    </section>
+
+    <section class="quiz-section">
+        <h2 style="text-align:center; margin-bottom: 40px;">Kuis Saya <span id="author-name-title"></span></h2>
+        <div id="author-quiz-grid" class="quiz-grid"></div>
+    </section>
+
+    <footer style="padding: 40px 10%; background: var(--accent); color: white; text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-tiktok fa-2x"></i></a>
+        </div>
+       <p>Made with <span class="heart-icon"><i class="fas fa-heart"></i></span> by artclinic & Gemini</p>
+        <p class="copyright">&copy; 2026 Kuisia Indonesia. All Rights Reserved.</p>
+    </footer>
+
+    <div id="modal-share" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modal-share')">&times;</span>
+            
+            <div id="view-input">
+                <h3>Bagikan Profil</h3>
+                <p>Salin tautan di bawah ini:</p>
+                <input type="text" id="share-link-input" readonly style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;">
+                <button onclick="copyAndSwitch()" class="btn-main">Salin Tautan</button>
+            </div>
+
+            <div id="view-success" class="hidden">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #27ae60; margin-bottom: 10px;"></i>
+                <h3>Berhasil!</h3>
+                <p>Link berhasil disalin ke clipboard.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoo_WtH6JbT0KvMzmud5Ew_TpEjgFGqhU",
+            authDomain: "fir-kuis-23368.firebaseapp.com",
+            databaseURL: "https://fir-kuis-23368-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        // Cek agar tidak inisialisasi ganda
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+    </script>
+
+    <script src="author-script.js"></script>
+</body>
+</html>

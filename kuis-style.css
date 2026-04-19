@@ -1,0 +1,177 @@
+/* quiz-style.css */
+:root {
+    --primary: #A0D2EB;    
+    --accent: #8458B3;     
+    --accent-light: #DDBDF4;
+    --bg-admin: #F4F7FE;   
+    --text: #494D5F;
+    --white: #ffffff;
+    --shadow-pro: 0 10px 30px rgba(73, 77, 95, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: var(--bg-admin);
+    font-family: 'Poppins', sans-serif;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* Layout Utama Kuis */
+.quiz-container { 
+    width: 100%; 
+    max-width: 600px; 
+    margin-top: 50px; 
+}
+
+.question-card { 
+    background: var(--white); 
+    padding: 40px; 
+    border-radius: 20px; 
+    box-shadow: var(--shadow-pro);
+    text-align: center;
+}
+
+/* Tombol Jawaban */
+
+/* Font & Layout Perbaikan */
+#q-text { font-size: 1.4rem !important; line-height: 1.5; color: var(--text); }
+
+/* Progress Bar */
+.progress-bar { width: 100%; height: 10px; background: #eef0f7; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
+
+/* Feedback */
+.correct-flash { background: #4CAF50 !important; color: white !important; border-color: #4CAF50 !important; }
+.wrong-flash { background: #f44336 !important; color: white !important; border-color: #f44336 !important; animation: shake 0.4s; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+}
+
+/* Leaderboard Expandable */
+#leaderboard-list { max-height: 200px; overflow: hidden; transition: 0.5s; }
+#leaderboard-list.expanded { max-height: 1000px; overflow-y: auto; }
+.btn-toggle { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; }
+
+.option-btn { 
+    display: block; 
+    width: 100%; 
+    font-size: 1.1rem !important;
+    padding: 20px !important;
+    margin-bottom: 15px; 
+    border: 2px solid var(--primary); 
+    border-radius: 12px; 
+    background: var(--white);
+    text-align: center; 
+    cursor: pointer; 
+    transition: 0.3s; 
+    font-weight: 600;
+    color: var(--text);
+}
+
+.option-btn:hover { 
+    background: var(--accent) !important; 
+    color: var(--white) !important;
+    transform: scale(1.02); /* Tombol akan membesar sedikit saat disentuh */
+}
+
+.join-box { 
+    display: flex; 
+    flex-direction: column; /* Mengubah susunan menjadi vertikal */
+    gap: 15px;              /* Memberi jarak otomatis antar elemen di dalam box */
+    max-width: 500px; 
+    margin: 0 auto; 
+}
+
+.join-box input { 
+    width: 100%;            /* Pastikan input memenuhi lebar */
+    padding: 15px; 
+    border-radius: 10px; 
+    border: 2px solid #eef0f7;
+}
+
+.join-box button {
+    width: 100%;            /* Tombol juga jadi lebar */
+    padding: 15px;
+}
+
+/* Memberi jarak pada elemen input dan tombol di dalam setup-container */
+#setup-container input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px; /* Memberi jarak ke bawah untuk tombol */
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+#setup-container button {
+    margin-top: 10px; /* Jarak atas dari input */
+    padding: 15px;
+    cursor: pointer;
+}
+
+/* Gaya untuk tombol utama yang konsisten */
+.btn-primary {
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 100%;
+    margin-top: 20px; /* Memberi jarak atas agar tidak menempel ke input */
+}
+
+.btn-primary:hover {
+    background: #6a4695;
+    transform: translateY(-2px);
+}
+
+/* Gaya untuk input agar rapi */
+.input-modern {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Penting agar padding tidak merusak lebar */
+    margin-bottom: 10px;
+}
+
+/* Utility Class */
+.hidden { display: none; }
+
+/* Pastikan tag tebal bekerja di dalam kartu soal */
+.question-card strong, 
+.question-card b {
+    font-weight: 700 !important;
+    color: #333; /* Warna lebih gelap agar kontras tebalnya jelas */
+}
+
+/* Tambahan jika Quill menggunakan class khusus */
+.ql-bold {
+    font-weight: bold !important;
+}
+
+/* Mencegah tabrakan gaya Poppins */
+body, button, input {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Di halaman admin Mas */
+.preview-question-text strong, 
+.preview-question-text b {
+    font-weight: 800 !important;
+    color: #000;
+}

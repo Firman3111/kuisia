@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulai Kuis - Kuisia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css"> 
+    <link rel="icon" type="image/png" href="Kuisia_icon.png">
+    <style>
+        .quiz-container { max-width: 700px; margin: 50px auto; padding: 20px; }
+        
+        /* Perbaikan: Gunakan box-shadow */
+        .question-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-pro); 
+        }
+
+        .option-btn { 
+            display: block; width: 100%; padding: 15px; margin-bottom: 12px; 
+            border: 2px solid #eef0f7; border-radius: 12px; background: none;
+            text-align: left; cursor: pointer; transition: 0.3s; font-family: inherit;
+            font-size: 1rem; color: var(--text);
+        }
+
+        .option-btn:hover { border-color: var(--accent); background: #f9f5ff; }
+        .option-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .progress-bar { height: 8px; background: #eef0f7; border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
+
+        /* Style untuk input nama agar senada dengan dashboard */
+        .input-modern {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #eef0f7;
+            border-radius: 10px;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 20px;
+        }
+        .input-modern:focus { border-color: var(--accent); }
+
+        .hidden { display: none !important; }
+
+        /* Warna untuk jawaban benar */
+        .correct-flash {
+            background-color: #4CAF50 !important; /* Hijau */
+            color: white !important;
+            border-color: #4CAF50 !important;
+            transition: 0.2s;
+        }
+
+        /* Warna untuk jawaban salah */
+        .wrong-flash {
+            background-color: #f44336 !important; /* Merah */
+            color: white !important;
+            border-color: #f44336 !important;
+            animation: shake 0.4s; /* Efek getar */
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #eef0f7;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent); /* Warna ungu Anda */
+            width: 0%; /* Mulai dari 0 */
+            transition: width 0.5s ease-in-out; /* INI YANG MEMBUAT ANIMASI HALUS */
+        }
+
+        /* Animasi getar untuk jawaban salah */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Container untuk daftar peringkat */
+        #leaderboard-list {
+            max-height: 350px; /* Batasi tinggi awal */
+            overflow: hidden; /* Sembunyikan sisanya */
+            transition: max-height 0.5s ease;
+            position: relative;
+        }
+
+        /* Kondisi saat diperluas */
+        #leaderboard-list.expanded {
+            max-height: 2000px; /* Tinggi yang cukup untuk 50 siswa */
+            overflow-y: auto;
+        }
+
+        /* Efek Blur Psikologis untuk peringkat di bawah 5 */
+        .blur-item {
+            filter: blur(4px);
+            opacity: 0.6;
+            transition: filter 0.3s, opacity 0.3s;
+            pointer-events: none; /* Siswa tidak bisa berinteraksi sebelum dibuka */
+        }
+
+        /* Hilangkan blur saat tombol 'Lihat Semua' ditekan */
+        .expanded .blur-item {
+            filter: blur(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Tombol Lihat Semua */
+        .btn-toggle {
+            background: none;
+            border: none;
+            color: #DDBDF4;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #pass-input-siswa:focus {
+            border-color: var(--accent) !important;
+            background-color: #fff;
+        }
+
+        .badge-hots {
+        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);
+        animation: pulse-hots 2s infinite;
+    }
+
+    @keyframes pulse-hots {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Penanda tombol yang sudah dipilih saat review */
+    /* Container untuk barisan nomor soal */
+    #quiz-pagination {
+    display: flex;
+    flex-wrap: nowrap; /* WAJIB: Agar tombol tetap satu baris horizontal */
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    padding: 15px 5px;
+    border-top: 1px solid #eee;
+    overflow-x: hidden; /* Mencegah scrollbar muncul jika layar sangat sempit */
+}
+
+/* Style Dasar Tombol (Angka & Panah) */
+.nav-btn {
+    min-width: 38px; 
+    height: 38px;
+    border-radius: 12px;
+    border: 2px solid #eef0f7;
+    background: #f8f9fa;
+    color: #a0aec0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Mencegah tombol gepeng di layar kecil */
+}
+
+/* Style Tombol Panah (Prev/Next) agar lebih kontras */
+.nav-btn i {
+    font-size: 0.9rem;
+}
+
+/* Style saat soal sedang dibuka (Active) */
+.nav-btn.active {
+    background: var(--accent); 
+    color: var(--white);
+    border-color: var(--white);
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(138, 138, 138, 0.3);
+    z-index: 2;
+}
+
+/* Style jika soal sudah dijawab (Hijau Emerald) */
+.nav-btn.answered {
+    background: var(--accent); 
+    color: var(--white);
+    border-color: var(--white);
+}
+
+/* Hover Effect */
+.nav-btn:hover:not(.active):not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--bg-admin);
+}
+
+/* Style untuk tombol panah yang mati (saat di soal pertama/terakhir) */
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: #f1f1f1;
+}
+
+/* Khusus Mobile: Jika layar sangat kecil, kecilkan sedikit tombolnya */
+@media (max-width: 400px) {
+    .nav-btn {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        font-size: 0.8rem;
+    }
+    #quiz-pagination {
+        gap: 5px;
+    }
+}
+
+    /* Floating Timer - Muncul di pojok kanan atas soal */
+    #global-review-info {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: #c53030; /* Merah tegas */
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(197, 48, 48, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    /* Animasi berkedip saat waktu kritis (di bawah 1 menit) */
+    .timer-critical {
+        animation: blinker 1s linear infinite;
+    }
+
+    @keyframes blinker {
+        50% { opacity: 0.5; }
+    }
+
+    /* Animasi halus saat tombol diklik */
+    .option-btn {
+        transition: all 0.2s ease;
+    }
+
+    .option-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Penanda di navigasi bawah untuk soal yang sudah diisi */
+    .nav-btn.answered {
+        background: var(--white) !important;
+        color: var(--accent) !important;
+        border: 1px solid var(--bg-admin) !important;
+    }
+
+    /* Container khusus untuk membatasi tinggi daftar pembahasan */
+    .review-scroll-container {
+        max-height: 450px; /* Batasi tinggi (misal: sekitar 2-3 kartu soal) */
+        overflow-y: auto;  /* Aktifkan scroll vertikal */
+        padding-right: 10px; /* Ruang agar scrollbar tidak menutupi teks */
+        margin-top: 15px;
+        border-radius: 10px;
+    }
+
+    /* Mempercantik tampilan scrollbar (khusus Chrome, Edge, Safari) */
+    .review-scroll-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    .review-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .review-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--accent); /* Warna ungu sesuai tema Zingquis */
+        border-radius: 10px;
+    }
+    .review-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+    }
+
+    /* Container Utama Kartu Landing */
+    .quiz-card-landing {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-pro);
+        max-width: 500px;
+        margin: 40px auto;
+        transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                    box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    /* Efek Hover Kartu (Shadow Membulat) */
+    .quiz-card-landing:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(132, 88, 179, 0.15); /* Shadow lembut mengikuti lekukan */
+    }
+
+    /* Banner Image */
+    .card-banner {
+        position: relative;
+        width: 100%;
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .card-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    /* Efek Zoom Gambar saat Hover */
+    .quiz-card-landing:hover .card-banner img {
+        transform: scale(1.1);
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--accent);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .card-body-landing {
+        padding: 25px;
+    }
+
+    .card-stats {
+        display: flex;
+        gap: 15px;
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+    .card-stats i {
+        color: var(--accent);
+    }
+
+    /* Modal Overlay dengan Background Blur */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        transition: 0.3s;
+    }
+
+    .modal-content {
+        background: white;
+        width: 90%;
+        max-width: 400px;
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .share-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .share-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #444;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .share-item i {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .wa i { background: #25D366; }
+    .fb i { background: #1877F2; }
+    .copy i { background: #888; }
+
+    .share-item:hover { transform: translateY(-5px); }
+
+    .close-btn {
+        background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #aaa;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+    :root {
+            --logo-size-splash: 120px; /* Ukuran logo di atas kuis */
+        }
+
+        /* Container Logo Animasi */
+        .splash-logo-container {
+            position: relative;
+            width: var(--logo-size-splash);
+            margin: 0 auto 15px auto;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .splash-logo-container.animate-bounce {
+            opacity: 1;
+            animation: popUpBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Shimmer Effect dengan Masking Logo */
+        .shimmer-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            -webkit-mask-image: url('Kuisia_color.png');
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: url('Kuisia_color.png');
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        .shimmer-layer::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            transform: skewX(-25deg);
+        }
+
+        .animate-shimmer .shimmer-layer::after {
+            animation: shimmerEffect 8s ease-in-out infinite; /* Buat infinite agar terus berkilau */
+        }
+
+        /* Styling Tagline */
+        .main-tagline-splash {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: -15px;
+            text-align: center;
+        }
+
+        .sub-tagline-splash {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #888;
+            opacity: 0;
+            transform: scale(1.5);
+            text-align: center;
+            margin-top: -5px;
+            margin-bottom: 40px;
+        }
+
+        .splash-word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(10px);
+            margin: 0 3px;
+        }
+
+        .splash-word.pop, .sub-tagline-splash.pop {
+            animation: wordPop 0.5s ease forwards;
+        }
+
+        /* Keyframes */
+        @keyframes wordPop { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popUpBounce { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shimmerEffect {
+            /* 0% sampai 30%: Proses kilatan berjalan (cepat) */
+            0% { left: -150%; }
+            30% { left: 150%; }
+            
+            /* 31% sampai 100%: Posisi tetap di luar (diam/jeda) */
+            100% { left: 150%; }
+        }
+
+    /* Responsif untuk HP - Pojok Kanan Atas */
+    @media (max-width: 600px) {
+        #global-review-info {
+            /* Reset posisi bawah agar tidak ketarik */
+            bottom: auto !important; 
+            
+            /* Tempelkan di kanan atas */
+            top: 10px !important; 
+            right: 10px !important;
+            
+            /* Ukuran lebih mungil agar tidak makan tempat */
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            gap: 5px;
+            
+            /* Pastikan lebar tidak memenuhi layar */
+            width: fit-content;
+            max-width: 150px; 
+            
+            /* Tambahkan sedikit transparansi agar teks di bawahnya (jika ada) masih agak terlihat */
+            background: rgba(197, 48, 48, 0.9); 
+        }
+
+        .question-card {
+            padding-top: 40px; /* Memberi ruang agar soal tidak tertutup timer melayang */
+        }
+    }
+    </style>
+
+</head>
+
+<body style="background: var(--bg-admin);">
+    <div class="quiz-container">
+        <div id="header-branding" style="text-align: center; margin-top: 20px;">
+            <div id="splashLogo" class="splash-logo-container">
+                <div style="position: relative;">
+                    <img src="Kuisia_color.png" alt="Logo" style="width:100%; height:auto;">
+                    <div class="shimmer-layer"></div>
+                </div>
+            </div>
+
+            <div class="main-tagline-splash">
+                <span class="splash-word" id="sw1">Aku,</span>
+                <span class="splash-word" id="sw2">Kamu,</span>
+                <span class="splash-word" id="sw3">Kita</span>
+            </div>
+            <div id="subSplash" class="sub-tagline-splash">Belajar Bersama</div>
+        </div>
+
+        <h1 id="quiz-title-display" class="hidden">Kuisia Viral</h1>
+
+        <div id="setup-container" class="quiz-card-landing">
+            <div class="card-banner">
+                <div class="category-badge">Recomended Quiz</div>
+                <img id="wait-thumbnail" src="default-thumb.jpg">
+            </div>
+
+            <div class="card-body-landing">
+                <h2 id="wait-quiz-title" style="margin-bottom: 10px; color: var(--text);">Siap Dimulai?</h2>
+                
+                <div class="card-stats">
+                    <span><i class="fas fa-play-circle"></i> <span id="wait-play-count">0</span> kali dimainkan</span>
+                    <span><i class="fas fa-fire" style="color: #ff4757;"></i> Hot</span>
+                </div>
+
+                <p id="wait-quiz-desc" style="color: #666; margin-bottom: 25px; font-size: 0.95rem;">
+                    Uji wawasanmu dan raih skor tertinggi!
+                </p>
+
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <label style="font-weight: 600; font-size: 0.85rem; color: var(--text);">Nama Kamu</label>
+                    <input type="text" id="player-name" placeholder="Ketik nama kerenmu..." class="input-modern" style="background-image: none;">
+                </div>
+
+                <button onclick="startViralQuiz()" class="btn-primary" style="width: 100%; padding: 15px; border-radius: 12px; font-weight: bold;">
+                    Mulai Main!
+                </button>
+            </div>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar" style="width: 100%; height: 10px; background: #eee; border-radius: 5px; margin-bottom: 20px; overflow: hidden;">
+                <div id="progress-fill" style="width: 0%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
+            </div>
+            <div id="timer-box" style="margin-bottom: 15px; font-weight: 600; color: var(--accent); text-align: center;">
+                ⏳ Sisa Waktu: <span id="timer-display">30</span> detik
+            </div>   
+            
+            <div class="question-card">
+                <p id="q-number" style="color: var(--accent); font-weight: 600; margin-bottom: 10px;"></p>
+                <h3 id="q-text" style="margin-bottom: 30px;">Memuat soal...</h3>
+                <div id="options-container"></div>
+            </div>
+        </div>
+
+        <div id="result-area" class="question-card hidden" style="text-align: center;">
+            <i class="fas fa-trophy" style="font-size: 60px; color: #FFD700; margin-bottom: 20px;"></i>
+            <h2>Kuis Selesai!</h2>
+            <h1 id="final-score" style="font-size: 4rem; color: var(--accent); margin: 10px 0;">0</h1>
+            <p id="player-summary">Skor kamu berhasil dicatat!</p>
+            
+            <button onclick="window.backToHome()" class="btn-primary" style="width: 100%; margin-top: 20px; background: var(--accent); padding: 15px; border-radius: 12px; font-weight: bold;">
+                <i class="fas fa-home"></i> KEMBALI KE BERANDA
+            </button>
+
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+                <button onclick="location.reload()" style="background: none; border: none; color: #666; cursor: pointer; font-weight: 500;">
+                    <i class="fas fa-redo"></i> Main Lagi
+                </button>
+                
+                <button onclick="openShareModal()" style="background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-share-alt"></i> Bagikan Skor
+                </button>
+            </div>
+
+            <div id="share-modal" class="modal-overlay hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Bagikan Pencapaianmu! 🚀</h3>
+                        <button onclick="closeShareModal()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: 20px; color: #666;">Ajak temanmu untuk mengalahkan skormu!</p>
+                        <div class="share-grid">
+                            <a id="share-wa" href="#" target="_blank" class="share-item wa">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>WhatsApp</span>
+                            </a>
+                            <a id="share-fb" href="#" target="_blank" class="share-item fb">
+                                <i class="fab fa-facebook-f"></i>
+                                <span>Facebook</span>
+                            </a>
+                            <div onclick="copyQuizLink()" class="share-item copy">
+                                <i class="fas fa-link"></i>
+                                <span>Salin Link</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="Yess.mp3"></audio>
+    <audio id="sound-wrong" src="Noo.mp3"></audio>
+    <audio id="sound-result-excellent" src="score win.mp3"></audio> 
+    <audio id="sound-result-good" src="try again.mp3"></audio>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // CONFIG & INITIALIZATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoo_WtH6JbT0KvMzmud5Ew_TpEjgFGqhU",
+            authDomain: "fir-kuis-23368.firebaseapp.com",
+            databaseURL: "https://fir-kuis-23368-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const database = firebase.database();
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Ambil data dari sessionStorage agar sinkron dengan index.js
+        const quizId = sessionStorage.getItem('selectedQuizId') || urlParams.get('id');
+        const authorId = urlParams.get('author') || urlParams.get('uid');
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = "";
+        let timerInterval;
+        let timeLeft = 30;
+
+        // --- FUNGSI AWAL ---
+        async function initializeQuiz() {
+            if (!quizId) {
+                alert("Kuis tidak ditemukan!");
+                return;
+            }
+
+            try {
+                const snapshot = await database.ref(`quizzes_collections/${quizId}`).once('value');
+                const data = snapshot.val();
+
+                if (data) {
+                    document.getElementById('wait-quiz-title').innerText = data.title || "Siap Dimulai?";
+                    document.getElementById('wait-quiz-desc').innerText = data.desc || "Ayo raih skor tertinggi!";
+                    
+                    // Mengambil angka dimainkan
+                    const playCount = (data.stats && data.stats.played) ? data.stats.played : 0;
+                    const playCountElement = document.getElementById('wait-play-count');
+                    if (playCountElement) {
+                        playCountElement.innerText = playCount.toLocaleString('id-ID');
+                    }
+
+                    if (data.thumbnail) {
+                        const img = document.getElementById('wait-thumbnail');
+                        img.src = data.thumbnail;
+                        img.style.display = 'block';
+                    }
+
+                    // Memuat Soal
+                    let allQuestions = [];
+                    if (Array.isArray(data.questions)) {
+                        allQuestions = data.questions;
+                    } else if (typeof data.questions === 'object') {
+                        allQuestions = Object.values(data.questions);
+                    }
+
+                    // --- LOGIKA SHUFFLE (ACAK) ---
+                    // Mengacak urutan 20 soal, lalu mengambil 10 saja
+                    questions = allQuestions
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 10);
+                    
+                    console.log("Berhasil memuat " + questions.length + " soal acak.");
+                }
+            } catch (error) {
+                console.error("Gagal memuat kuis:", error);
+            }
+        }
+
+        window.startViralQuiz = function() {
+            const nameInput = document.getElementById('player-name');
+            if (!nameInput.value.trim()) return alert("Masukkan namamu!");
+            
+            playerName = nameInput.value.trim();
+            currentQuestionIndex = 0;
+            score = 0;
+
+            // Update play count di Firebase secara realtime (+1)
+            database.ref(`quizzes_collections/${quizId}/stats/played`).transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+
+            document.getElementById('setup-container').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            
+            window.showQuestion();
+        };
+
+        window.showQuestion = function() {
+            if (currentQuestionIndex >= questions.length) {
+                window.finishQuiz();
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            if (!q) return;
+
+            // Update Progress Bar
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+
+            document.getElementById('q-number').innerText = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('q-text').innerHTML = q.text || q.question;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const options = q.options || [];
+            options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => window.checkAnswer(opt, q.answer);
+                container.appendChild(btn);
+            });
+
+            startTimer();
+        };
+
+        function startTimer() {
+            timeLeft = 30;
+            document.getElementById('timer-display').innerText = timeLeft;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    window.checkAnswer(null, null);
+                }
+            }, 1000);
+        }
+
+        window.checkAnswer = function(userChoice, correctAnswer) {
+            clearInterval(timerInterval);
+            
+            if (userChoice === correctAnswer && userChoice !== null) {
+                score += 10;
+                document.getElementById('sound-correct')?.play();
+            } else {
+                document.getElementById('sound-wrong')?.play();
+            }
+
+            currentQuestionIndex++;
+            setTimeout(window.showQuestion, 500);
+        };
+
+        window.finishQuiz = function() {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('result-area').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+
+            if (score >= 70) {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                document.getElementById('sound-result-excellent')?.play();
+            } else {
+                document.getElementById('sound-result-good')?.play();
+            }
+        };
+
+        window.backToHome = function() {
+            window.location.href = 'index.html';
+        };
+
+        // Inisialisasi saat halaman dibuka
+        initializeQuiz();
+
+        window.openShareModal = function() {
+            const finalScore = document.getElementById('final-score').innerText;
+            const quizTitle = document.getElementById('wait-quiz-title').innerText;
+            const shareUrl = window.location.href;
+            const text = `Hore! Saya baru saja dapat skor ${finalScore} di kuis "${quizTitle}". Coba kalahkan skorku di sini: `;
+
+            // Set Link WA
+            document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(text + shareUrl)}`;
+            
+            // Set Link FB
+            document.getElementById('share-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+            document.getElementById('share-modal').classList.remove('hidden');
+        };
+
+        window.closeShareModal = function() {
+            document.getElementById('share-modal').classList.add('hidden');
+        };
+
+        window.copyQuizLink = function() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Link kuis berhasil disalin! Silakan bagikan ke temanmu.");
+        };
+
+        function runHeaderAnimation() {
+            // 1. Munculkan Logo dengan Bounce & Shimmer
+            const logo = document.getElementById('splashLogo');
+            logo.classList.add('animate-bounce', 'animate-shimmer');
+
+            // 2. Munculkan Kata "Aku, Kamu, Kita" bergantian
+            setTimeout(() => document.getElementById('sw1').classList.add('pop'), 500);
+            setTimeout(() => document.getElementById('sw2').classList.add('pop'), 800);
+            setTimeout(() => document.getElementById('sw3').classList.add('pop'), 1100);
+
+            // 3. Munculkan Sub-tagline terakhir
+            setTimeout(() => {
+                document.getElementById('subSplash').classList.add('pop');
+            }, 1500);
+        }
+
+        // Panggil fungsi ini saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', runHeaderAnimation);
+    </script>
+</body>
+</html>

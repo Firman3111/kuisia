@@ -1,0 +1,285 @@
+:root {
+    --master-primary: #1e293b;
+    --master-accent: #8458B3;
+    --master-gold: #fbbf24;
+    --master-danger: #ef4444;
+    --master-bg: #f8fafc;
+    --master-text: #81858b;
+    --white: #ffffff;
+    --shadow-soft: 0 10px 25px rgba(0,0,0,0.05);
+    --sidebar-width: 280px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--master-bg);
+    color: var(--master-text);
+    overflow-x: hidden;
+}
+
+/* SIDEBAR STYLING */
+.master-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--master-primary);
+    color: white;
+    height: 100vh;
+    padding: 30px 20px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-nav ul { list-style: none; }
+.sidebar-nav li { margin-bottom: 10px; border-radius: 12px; overflow: hidden; }
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.sidebar-nav li.active a, .sidebar-nav li a:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 15px; }
+
+.btn-migrasi {
+    background: var(--master-text);
+    color: var(--master-primary);
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.btn-danger {
+    background: var(--master-danger);
+    color: var(--master-bg);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family:'poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    transition: ease-in-out 0.3s;
+}
+
+.btn-danger:hover {
+    background: #d66c6c;
+    color: #f5f5f5;
+}
+
+.btn-edit {
+    background: var(--master-gold);
+    color: var(--master-text);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family:'poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    transition: ease-in-out 0.3s;
+}
+
+.btn-edit:hover {
+    background: var(--master-primary);
+    color: var(--master-gold);
+}
+
+.btn-hapus {
+    background: var(--master-danger);
+    color: var(--master-bg);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family:'poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    transition: ease-in-out 0.3s;
+}
+
+.btn-hapus:hover {
+    background: var(--master-text);
+    color: var(--master-danger);
+}
+
+
+.btn-back {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 10px;
+    text-align: center;
+}
+
+/* MAIN CONTENT */
+.master-content {
+    margin-left: var(--sidebar-width);
+    padding: 40px;
+    min-height: 100vh;
+    transition: 0.3s;
+}
+
+.master-container { max-width: 1200px; margin: 0 auto; }
+
+.content-header { margin-bottom: 30px; }
+.content-header h1 { font-size: 1.8rem; color: var(--master-primary); }
+.content-header p { color: #64748b; }
+
+/* CARD & TABLE */
+.master-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+}
+
+.card-header h3 { margin-bottom: 20px; font-size: 1.2rem; }
+
+.table-responsive { width: 100%; overflow-x: auto; }
+
+.master-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.master-table th {
+    text-align: left;
+    padding: 15px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.master-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+
+/* BADGES */
+.badge { padding: 10px 20px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+.badge-premium { background: #fef3c7; color: #92400e; }
+.badge-free { background: #f1f5f9; color: #475569; }
+
+/* MOBILE HEADER */
+.mobile-header {
+    display: none;
+    background: var(--master-primary);
+    color: white;
+    padding: 15px 20px;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.mobile-header button { background: none; border: none; color: white; font-size: 1.2rem; }
+
+
+/* --- UPDATE RESPONSIVE LOGIC --- */
+@media (max-width: 1024px) {
+    /* 1. Sembunyikan Sidebar ke luar layar */
+    .master-sidebar { 
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        height: 100vh;
+        width: 280px;
+        transform: translateX(-100%); 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 2. Saat Sidebar Aktif */
+    .master-sidebar.active { 
+        transform: translateX(0); 
+    }
+
+    /* 3. Konten Utama mengambil layar penuh */
+    .master-content { 
+        margin-left: 0 !important; 
+        padding: 20px; 
+        padding-top: 80px; /* Beri ruang untuk tombol floating di atas */
+    }
+
+    /* 4. Overlay Background */
+    #sidebar-overlay.active {
+        display: block; /* Pastikan terlihat saat aktif */
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.5); /* Warna lebih gelap elegan */
+        backdrop-filter: blur(2px);
+        z-index: 999;
+    }
+
+    /* 5. Tombol Menu Melayang (Baru) */
+    #mobile-toggle-btn {
+        display: flex; /* Munculkan hanya di mobile/tablet */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        left: auto;
+        z-index: 1001; /* Di atas overlay, tapi di bawah modal */
+        background: var(--master-primary);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+}
+
+/* Tetap gunakan style lama Mas untuk bagian lain */
+.content-header {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* MODAL STYLING */
+.master-modal {
+    display: none; position: fixed; z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(4px);
+}
+
+.master-modal-content {
+    background: white; margin: 10vh auto; padding: 30px;
+    border-radius: 24px; width: 90%; max-width: 400px;
+}
+
+.master-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+.master-form-group { margin-bottom: 15px; }
+.master-form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; }
+.master-form-group select, .master-form-group input {
+    width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;
+}
+
+.btn-save {
+    width: 100%; background: var(--master-text); color: white;
+    padding: 12px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+}
+
