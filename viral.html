@@ -778,35 +778,42 @@
         };
 
         window.showQuestion = function() {
-            if (currentQuestionIndex >= questions.length) {
-                window.finishQuiz();
-                return;
-            }
+        if (currentQuestionIndex >= questions.length) {
+            window.finishQuiz();
+            return;
+        }
 
-            const q = questions[currentQuestionIndex];
-            if (!q) return;
+        const q = questions[currentQuestionIndex];
+        if (!q) return;
 
-            // Update Progress Bar
-            const progress = ((currentQuestionIndex) / questions.length) * 100;
-            document.getElementById('progress-fill').style.width = `${progress}%`;
+        // Update Progress Bar
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        document.getElementById('progress-fill').style.width = `${progress}%`;
 
-            document.getElementById('q-number').innerText = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
-            document.getElementById('q-text').innerHTML = q.text || q.question;
+        document.getElementById('q-number').innerText = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
+        
+        // --- PERBAIKAN DI SINI ---
+        // Menggunakan q.q karena di JSON kita pakai kunci "q"
+        document.getElementById('q-text').innerHTML = q.q || q.text || q.question;
 
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
 
-            const options = q.options || [];
-            options.forEach((opt) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt;
-                btn.onclick = () => window.checkAnswer(opt, q.answer);
-                container.appendChild(btn);
-            });
+        const options = q.options || [];
+        options.forEach((opt, index) => { // Tambahkan index untuk cek jawaban
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            
+            // --- PERBAIKAN DI SINI ---
+            // Kita bandingkan index pilihan dengan q.correct
+            btn.onclick = () => window.checkAnswer(index, q.correct);
+            
+            container.appendChild(btn);
+        });
 
-            startTimer();
-        };
+        startTimer();
+    };
 
         function startTimer() {
             timeLeft = 30;
