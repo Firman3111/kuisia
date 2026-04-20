@@ -243,6 +243,64 @@
         #btn-reply-email:active {
             transform: translateY(0);
         }
+
+        .stats-grid {
+        display: grid;
+        /* Kita buat 4 kolom untuk menampung kartu baru */
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 20px;
+        margin-bottom: 30px;
+        }
+
+        /* Style per Kartu */
+        .stat-card2 {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex; /* Membuat icon dan teks sejajar horizontal dalam kartu */
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f1f5f9;
+        }
+
+        /* Gaya Icon */
+        .stat-card2 i {
+            font-size: 1.5rem;
+            color: #6366f1; /* Warna indigo modern */
+            background: #eef2ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        /* Gaya Teks */
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .stat-info p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+
+        @media (max-width: 1024px) {
+            /* Untuk tablet, bagi jadi 2 baris x 2 kolom */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            /* Untuk HP, tumpuk 1 kolom */
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -256,6 +314,7 @@
         <nav class="sidebar-nav">
             <ul>
                 <li class="active"><a href="#" id="nav-dashboard"><i class="fas fa-chart-line"></i> Ringkasan Sistem</a></li>
+                <li><a href="#" id="nav-stats-challenge" onclick="switchSection('stats-challenge')"><i class="fas fa-chart-pie"></i> Statistik Challenge</a></li>
                 <li id="nav-inbox"><a href="#"><i class="fas fa-envelope"></i><span>Pesan Masuk</span><span id="badge-inbox" class="badge-count" style="display: none;">0</span></a></li>
                 <li><a href="#" id="nav-batch-quiz"><i class="fas fa-rocket"></i> Batch Kuis Viral</a></li>
                 <li><a href="#" id="nav-ads"><i class="fas fa-ad"></i> Manajemen Iklan</a></li>
@@ -365,6 +424,61 @@
                         </table>
                     </div>
                 </div>
+            </section>
+
+            <section id="section-stats-challenge" class="menu-section master-content-section" style="display:none;">
+                    <div class="header-section" style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #333;">Statistik Kuis Challenge</h1>
+                        <p>Analisis interaksi dan durasi pengerjaan kuis viral secara global.</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card2">
+                            <i class="fas fa-mouse-pointer" style="color: #6366f1;"></i>
+                            <div class="stat-info">
+                                <h3 id="ch-total-clicks">0</h3>
+                                <p>Total Klik</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card2">
+                            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                            <div class="stat-info">
+                                <h3 id="ch-total-finished">0</h3>
+                                <p>Kuis Selesai</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card2">
+                            <i class="fas fa-stopwatch" style="color: #f59e0b;"></i>
+                            <div class="stat-info">
+                                <h3 id="ch-avg-time">0s</h3>
+                                <p>Rata-rata Waktu</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card2">
+                            <i class="fas fa-history" style="color: #ec4899;"></i>
+                            <div class="stat-info">
+                                <h3 id="ch-total-duration">0h</h3>
+                                <p>Total Waktu Main</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="master-card" style="margin-top: 25px;">
+                        <h3>Analisis Performa Challenge</h3>
+                        <div style="height: 350px; position: relative;">
+                            <canvas id="challengeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="master-card" style="margin-top: 25px;">
+                        <h3>Sebaran Wilayah Pengguna (Top 5)</h3>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="demographicChart"></canvas>
+                        </div>
+                    </div>
             </section>
 
             <section id="section-inbox" class="menu-section" style="display:none;">

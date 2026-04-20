@@ -83,51 +83,55 @@ function generateGradient(str) {
     return `linear-gradient(135deg, ${colors[index][0]} 0%, ${colors[index][1]} 100%)`;
 }
 
-function renderQuizzes(quizzes) {
-    const quizContainer = document.getElementById('quiz-list');
+function renderQuizzes(quizzes, searchTerm = "", targetId = 'quiz-list') {
+    const quizContainer = document.getElementById(targetId);
     if (!quizContainer) return;
     
     quizContainer.innerHTML = '';
     
+    // Jika data kosong
     if (quizzes.length === 0) {
-        quizContainer.innerHTML = '<p style="text-align:center; padding: 50px; min-width: 100%;">Tidak ada kuis yang ditemukan.</p>';
+        const message = searchTerm 
+            ? `Kuis "<strong>${searchTerm}</strong>" tidak ditemukan.` 
+            : "Belum ada kuis tersedia.";
+            
+        quizContainer.innerHTML = `
+            <div style="text-align:center; padding: 40px; min-width: 100%; color: #999;">
+                <i class="fas fa-search-minus" style="font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+                <p>${message}</p>
+            </div>`;
         return;
     }
 
     quizzes.forEach(quiz => {
         const card = document.createElement('div');
-        // Gunakan class viral-card agar seragam dengan section atas
         card.className = 'viral-card'; 
         card.style.position = 'relative'; 
-        card.style.minWidth = '280px'; // Memastikan ukuran konsisten di slider
+        card.style.minWidth = '280px'; 
         
-        // --- Tetap Pertahankan Logika Fungsional Mas ---
         const hasLiked = localStorage.getItem(`liked_${quiz.id}`);
         const heartClass = hasLiked ? 'fas fa-heart' : 'far fa-heart';
         const btnStyle = hasLiked ? 'color: #ff4757;' : '';
-        
         const playCount = quiz.results ? Object.keys(quiz.results).length : 0;
         const isPopular = (quiz.likes >= 1000 || playCount >= 1000);
         
-        // 1. Badge Populer & Privat
         const popularBadge = isPopular ? `
             <div style="position:absolute; top:10px; right:10px; background:linear-gradient(45deg, #FF512F, #DD2476); color:white; padding:4px 10px; border-radius:20px; font-size:0.65rem; font-weight:bold; z-index:5; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                 <i class="fas fa-fire"></i> POPULER
             </div>` : '';
 
-        // 2. Logika Thumbnail (Kuisia Logo/Image)
         let thumbnailHTML = '';
         if (quiz.thumbnail) {
             thumbnailHTML = `<img src="${quiz.thumbnail}" alt="Thumbnail" style="width:100%; height:150px; object-fit:cover;">`;
         } else {
-            const gradient = generateGradient(quiz.title);
+            // Pastikan fungsi generateGradient tersedia di script Mas
+            const gradient = typeof generateGradient === 'function' ? generateGradient(quiz.title) : '#eee';
             thumbnailHTML = `
                 <div style="width:100%; height:150px; background: ${gradient}; display: flex; align-items: center; justify-content: center; padding: 20px;">
-                    <img src="Kuisia_White.png" alt="Kuisia Logo" style="width:120px; height:auto; opacity: 0.8;">
+                    <img src="Kuisia_White.png" alt="Kuisia Logo" style="width:100px; height:auto; opacity: 0.8;">
                 </div>`;
         }
 
-        // --- Render Struktur Baru (Clean & Trendy) ---
         card.innerHTML = `
             ${popularBadge}
             <div class="card-header" onclick="window.location.href='kuis.html?id=${quiz.id}'" style="cursor:pointer; overflow:hidden; border-radius:15px 15px 0 0;">
@@ -136,24 +140,19 @@ function renderQuizzes(quizzes) {
                     <i class="fas fa-play-circle"></i> ${playCount} Main
                 </div>
             </div>
-            
             <div class="card-body" style="padding: 15px;">
-                
                 <h4 style="font-size: 1rem; margin: 5px 0; color: #333; cursor:pointer;" onclick="window.location.href='kuis.html?id=${quiz.id}'">
                     ${quiz.title}
                 </h4>
-                
                 <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px; height: 35px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${quiz.description || quiz.desc || "Ayo uji kemampuanmu sekarang!"}
                 </p>
-
                 <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:5px;">
                     <a href="author.html?id=${quiz.userId}" style="font-size: 0.7rem; font-weight: 700; color: var(--accent); text-decoration: none; text-transform: uppercase;">
                         @${quiz.authorName || "Anonim"}
                     </a>
                     <span style="font-size: 0.7rem; color: #888;"><i class="fas fa-heart"></i> ${quiz.likes || 0}</span>
                 </div>
-
                 <div class="card-actions" style="display: flex; gap: 8px; border-top: 1px solid #f0f0f0; padding-top: 12px;">
                     <button id="btn-like-${quiz.id}" onclick="likeQuiz('${quiz.userId}', '${quiz.id}')" style="${btnStyle} flex:1; background: #f8f9fa; border: none; padding: 8px; border-radius: 10px; cursor: pointer;">
                         <i class="${heartClass}"></i>
@@ -350,27 +349,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Fungsi untuk memfilter kuis
+//FUNGSI SEARCH BARU-------------------------------------------------------------------
+
+// 1. Pastikan variabel global sudah ada di paling atas
+allQuizzes = [];           // Untuk kuis akademik/biasa
+allViralQuizzes = [];      // Untuk kuis challenge (quizzes_collections)
+
+// 2. Ambil data kuis AKADEMIK (Asumsi node-nya 'quizzes')
+database.ref('quizzes').on('value', (snapshot) => {
+    const data = snapshot.val();
+    allQuizzes = []; 
+    if (data) {
+        for (let id in data) {
+            allQuizzes.push({ id, ...data[id] });
+        }
+    }
+    renderQuizzes(allQuizzes, "", 'quiz-list');
+});
+
+// 3. Ambil data kuis CHALLENGE (Node: 'quizzes_collections')
+database.ref('quizzes_collections').on('value', (snapshot) => {
+    const data = snapshot.val();
+    allViralQuizzes = []; // Bersihkan wadah sebelum diisi
+    
+    if (data) {
+        for (let id in data) {
+            // Kita masukkan data dari Firebase ke variabel global allViralQuizzes
+            allViralQuizzes.push({ id, ...data[id] });
+        }
+        console.log("✅ Data Challenge Berhasil Dimuat:", allViralQuizzes.length);
+    }
+    
+    // Render ke container viral (kotak biru kemarin)
+    renderQuizzes(allViralQuizzes, "", 'viral-scroll-container');
+});
+
+// Fungsi untuk memunculkan modal custom
+
 document.getElementById('search-quiz').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
     
-    const filtered = allQuizzes.filter(quiz => {
-        // Ambil isi deskripsi dari properti yang tersedia
-        const descriptionText = (quiz.description || quiz.desc || "").toLowerCase();
-        const titleText = (quiz.title || "").toLowerCase();
-        const authorText = (quiz.authorName || "").toLowerCase();
+    // Jika kosong, tampilkan semua
+    if (searchTerm === "") {
+        renderQuizzes(allQuizzes, "", 'quiz-list');
+        renderQuizzes(allViralQuizzes, "", 'viral-scroll-container');
+        if(document.getElementById('load-more-container')) {
+            document.getElementById('load-more-container').style.display = 'block';
+        }
+        return;
+    }
 
-        return titleText.includes(searchTerm) || 
-               descriptionText.includes(searchTerm) || 
-               authorText.includes(searchTerm);
+    // Filter Kuis Challenge (Viral)
+    const filteredViral = allViralQuizzes.filter(quiz => {
+        const title = (quiz.title || "").toLowerCase();
+        const deskripsi = (quiz.desc || "").toLowerCase(); // Sesuai struktur Firebase Mas
+        return title.includes(searchTerm) || deskripsi.includes(searchTerm);
     });
 
-    renderQuizzes(filtered);
+    // Filter Kuis Akademik
+    const filteredAcademic = allQuizzes.filter(quiz => {
+        const title = (quiz.title || "").toLowerCase();
+        const deskripsi = (quiz.desc || quiz.description || "").toLowerCase();
+        return title.includes(searchTerm) || deskripsi.includes(searchTerm);
+    });
+
+    // Render Hasilnya
+    renderQuizzes(filteredViral, searchTerm, 'viral-scroll-container');
+    renderQuizzes(filteredAcademic, searchTerm, 'quiz-list');
     
-    // Sembunyikan tombol Load More saat sedang mencari
-    const lb = document.getElementById('load-more-container');
-    if(lb) lb.style.display = searchTerm === "" ? 'block' : 'none';
+    if(document.getElementById('load-more-container')) {
+        document.getElementById('load-more-container').style.display = 'none';
+    }
 });
+
 
 // Fungsi untuk memunculkan modal custom
 function showCustomAlert(title, message, type = 'info') {

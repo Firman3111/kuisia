@@ -417,6 +417,7 @@ window.switchSection = function(sectionId) {
         case 'inbox': loadInboxData(); break;
         case 'settings': loadGlobalSettings(); break;
         case 'dashboard': loadPublicQuizzes(); break;
+        case 'stats-challenge': loadChallengeStats(); break;
         case 'batch-quiz':
             console.log("Menyiapkan Batch Importer...");
             // Jika nanti Mas ingin menampilkan daftar kuis yang sudah di-import,
@@ -452,6 +453,171 @@ document.addEventListener('DOMContentLoaded', () => {
 
     switchSection('dashboard');
 });
+
+// 1. Fungsi Pembantu Konversi Waktu (Agar 3660 detik jadi 1h 1m)
+function formatDuration(seconds) {
+    if (seconds === 0) return "0s";
+    if (seconds < 60) return seconds + "s";
+    
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (hrs > 0) return `${hrs}j ${mins}m`;
+    return `${mins}m ${secs}s`;
+}
+
+// 2. Fungsi Utama Load Statistik Challenge (Versi Lengkap: Statistik + Demografi)
+function loadChallengeStats() {
+    console.log("Memulai perhitungan statistik challenge & demografi...");
+    
+    database.ref('quizzes_collections').once('value', (snapshot) => {
+        let totalClicks = 0;
+        let totalFinished = 0;
+        let totalSeconds = 0;
+        
+        // Penampung data Chart Performa
+        let labelsPerforma = [];
+        let dataCountsPerforma = [];
+        
+        // Penampung data Demografi (Peta Lokasi)
+        let locationMap = {};
+
+        snapshot.forEach((child) => {
+            const quiz = child.val();
+            
+            // 1. Hitung Total Klik (dari stats/played)
+            const played = (quiz.stats && quiz.stats.played) ? quiz.stats.played : 0;
+            totalClicks += played;
+
+            // 2. Olah data dari node 'results'
+            if (quiz.results) {
+                const resultsArr = Object.values(quiz.results);
+                const countSelesai = resultsArr.length;
+                
+                totalFinished += countSelesai;
+                
+                resultsArr.forEach(res => {
+                    // Akumulasi waktu pengerjaan
+                    totalSeconds += (res.timeSpent || 0);
+                    
+                    // Akumulasi data lokasi untuk demografi
+                    const loc = res.location || "Lokasi Tidak Diketahui";
+                    locationMap[loc] = (locationMap[loc] || 0) + 1;
+                });
+
+                // Simpan data untuk Chart Performa (Bar Chart)
+                labelsPerforma.push(quiz.title || "Kuis Tanpa Judul");
+                dataCountsPerforma.push(countSelesai);
+            }
+        });
+
+        // 3. Hitung Rata-rata Waktu
+        const avgSeconds = totalFinished > 0 ? Math.round(totalSeconds / totalFinished) : 0;
+
+        // 4. Update UI Angka (Cards)
+        if (document.getElementById('ch-total-clicks')) {
+            document.getElementById('ch-total-clicks').innerText = totalClicks.toLocaleString();
+        }
+        if (document.getElementById('ch-total-finished')) {
+            document.getElementById('ch-total-finished').innerText = totalFinished.toLocaleString();
+        }
+        if (document.getElementById('ch-avg-time')) {
+            document.getElementById('ch-avg-time').innerText = formatDuration(avgSeconds);
+        }
+        if (document.getElementById('ch-total-duration')) {
+            document.getElementById('ch-total-duration').innerText = formatDuration(totalSeconds);
+        }
+
+        // 5. Render Chart 1: Performa Kuis (Bar/Line Chart)
+        if (typeof renderNewChart === 'function' && labelsPerforma.length > 0) {
+            renderNewChart('challengeChart', labelsPerforma, dataCountsPerforma, 'Total Selesai', '#6366f1');
+        }
+
+        // 6. Render Chart 2: Demografi Wilayah (Doughnut Chart)
+        // Ambil Top 5 wilayah terbanyak
+        const sortedLocations = Object.entries(locationMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        const labelsDemo = sortedLocations.map(item => item[0]);
+        const dataDemo = sortedLocations.map(item => item[1]);
+
+        if (labelsDemo.length > 0) {
+            renderDemographicChart(labelsDemo, dataDemo);
+        }
+
+        console.log("Statistik & Demografi Berhasil Diperbarui.");
+    });
+}
+
+// Fungsi Render khusus untuk Chart Demografi (Pie/Doughnut)
+function renderDemographicChart(labels, data) {
+    const ctx = document.getElementById('demographicChart').getContext('2d');
+    
+    // Hapus instance lama agar tidak tumpang tindih saat hover
+    if (window.demoChartInstance) window.demoChartInstance.destroy();
+
+    window.demoChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    '#6366f1', // Indigo
+                    '#10b981', // Emerald
+                    '#f59e0b', // Amber
+                    '#ef4444', // Red
+                    '#8b5cf6'  // Violet
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { family: 'Poppins', size: 12 }
+                    }
+                }
+            },
+            cutout: '70%' // Membuat tampilan Donat yang modern
+        }
+    });
+}
+
+// Fungsi Render Chart Universal (Bisa dipakai Akademik & Challenge)
+function renderNewChart(canvasId, labels, data, labelName, color) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (window[canvasId + 'Instance']) window[canvasId + 'Instance'].destroy();
+
+    window[canvasId + 'Instance'] = new Chart(ctx, {
+        type: 'bar', // Bisa ganti 'line' atau 'bar'
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelName,
+                data: data,
+                backgroundColor: color + '33', // Transparansi
+                borderColor: color,
+                borderWidth: 2,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
 
 // --- MANAJEMEN IKLAN LOGIC ---
 window.toggleAdInput = function() {
@@ -784,6 +950,7 @@ window.loadPublicQuizzes = function() {
         }
     });
 };
+
 window.deleteQuiz = (uid, quizId) => {
     if(confirm("Hapus kuis ini secara permanen dari akun user?")) {
         // Hapus langsung ke path spesifik user tersebut

@@ -708,6 +708,7 @@
         let playerName = "";
         let timerInterval;
         let timeLeft = 30;
+        let quizStartTime = 0;
 
         // --- FUNGSI AWAL ---
         async function initializeQuiz() {
@@ -758,6 +759,21 @@
             }
         }
 
+        //LOCATION setting
+
+        let userLocation = "Lokasi Tidak Diketahui";
+
+        // Deteksi lokasi via IP (Gratis & Open Source)
+        fetch('http://ip-api.com/json/')
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    // Kita ambil Provinsi & Kota
+                    userLocation = `${data.regionName}, ${data.city}`;
+                }
+            })
+            .catch(() => console.log("Gagal memuat lokasi, menggunakan default."));
+
         window.startViralQuiz = function() {
             const nameInput = document.getElementById('player-name');
             if (!nameInput.value.trim()) return alert("Masukkan namamu!");
@@ -765,6 +781,7 @@
             playerName = nameInput.value.trim();
             currentQuestionIndex = 0;
             score = 0;
+            quizStartTime = Date.now();
 
             // Update play count di Firebase secara realtime (+1)
             database.ref(`quizzes_collections/${quizId}/stats/played`).transaction((currentValue) => {
@@ -844,13 +861,60 @@
         };
 
         window.finishQuiz = function() {
+            // 1. Hentikan timer kuis
             clearInterval(timerInterval);
+            
+            // 2. Hitung durasi pengerjaan (selisih waktu)
+            const endTime = Date.now();
+            let durationInSeconds = 0;
+            
+            if (quizStartTime > 0) {
+                durationInSeconds = Math.floor((endTime - quizStartTime) / 1000);
+            }
+
+            // 3. Update UI Tampilan Hasil
             document.getElementById('quiz-area').classList.add('hidden');
             document.getElementById('result-area').classList.remove('hidden');
             document.getElementById('final-score').innerText = score;
 
+            // 4. Siapkan data hasil pengerjaan
+            const resultData = {
+                name: playerName || "Anonim",
+                score: score,
+                timeSpent: durationInSeconds, // Detik pengerjaan
+                location: userLocation,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            // 5. Kirim data ke Firebase
+            if (quizId) {
+                console.log("Mengirim hasil kuis ke Firebase untuk ID:", quizId);
+                
+                database.ref(`quizzes_collections/${quizId}/results`).push(resultData)
+                    .then(() => {
+                        console.log("✅ Berhasil menyimpan durasi & skor ke node results.");
+                    })
+                    .catch((error) => {
+                        console.error("❌ Gagal menyimpan ke results:", error);
+                    });
+                
+                // Panggil fungsi update statistik (tambah count di node stats/played)
+                if (typeof updateStatistikPengerjaan === "function") {
+                    updateStatistikPengerjaan(quizId, authorId);
+                }
+            } else {
+                console.error("❌ Gagal mengirim hasil: quizId tidak ditemukan di URL.");
+            }
+
+            // 6. Efek Suara & Visual (Confetti)
             if (score >= 70) {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                if (typeof confetti === "function") {
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
                 document.getElementById('sound-result-excellent')?.play();
             } else {
                 document.getElementById('sound-result-good')?.play();
@@ -916,6 +980,51 @@
 
         // Panggil fungsi ini saat halaman dimuat
         window.addEventListener('DOMContentLoaded', runHeaderAnimation);
+
+        // Fungsi pembantu untuk konversi waktu
+        function formatDuration(seconds) {
+            if (seconds < 60) return seconds + "s";
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            if (hrs > 0) return `${hrs}h ${mins}m`;
+            return `${mins}m ${secs}s`;
+        }
+
+        // Update fungsi loadChallengeStats Anda
+        function loadChallengeStats() {
+            database.ref('quizzes_collections').once('value', (snapshot) => {
+                let totalClicks = 0;
+                let totalFinish = 0;
+                let totalSeconds = 0;
+
+                snapshot.forEach((child) => {
+                    const quiz = child.val();
+                    totalClicks += (quiz.stats && quiz.stats.played) ? quiz.stats.played : 0;
+
+                    if (quiz.results) {
+                        const resultsArr = Object.values(quiz.results);
+                        totalFinish += resultsArr.length;
+                        
+                        resultsArr.forEach(res => {
+                            totalSeconds += res.timeSpent || 0;
+                        });
+                    }
+                });
+
+                // Hitung Rata-rata
+                const avgSeconds = totalFinish > 0 ? Math.round(totalSeconds / totalFinish) : 0;
+
+                // Tampilkan ke UI Master
+                document.getElementById('ch-total-clicks').innerText = totalClicks.toLocaleString();
+                document.getElementById('ch-total-finish').innerText = totalFinish.toLocaleString();
+                document.getElementById('ch-avg-time').innerText = formatDuration(avgSeconds);
+                document.getElementById('ch-total-duration').innerText = formatDuration(totalSeconds);
+                
+                console.log("Statistik Challenge Berhasil Diperbarui");
+            });
+        }
     </script>
 </body>
 </html>
