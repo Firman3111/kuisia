@@ -202,13 +202,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Logika Stats ---
     // --- Logika Stats Terpadu (Sekolah + Viral) ---
     const quizCounter = document.getElementById('user-count');
     const pengerjaanCounter = document.getElementById('admin-count');
     
     if (quizCounter || pengerjaanCounter) {
-        // Kita ambil data dari 'users' dan 'quizzes_collections' secara bersamaan
         Promise.all([
             database.ref('users').once('value'),
             database.ref('quizzes_collections').once('value')
@@ -216,30 +214,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const users = snapshotUsers.val();
             const viralQuizzes = snapshotViral.val();
 
-            let totalKuis = 0, totalPengerjaan = 0;
+            // Reset ke 0 sebelum menghitung ulang
+            let totalKuis = 0;
+            let totalPengerjaan = 0;
 
-            // 1. Hitung dari Model Kuis Sekolah (dari folder users)
+            // 1. Hitung Kuis Sekolah (dari folder users)
             if (users) {
-                Object.keys(users).forEach(uid => {
-                    const qzs = users[uid].quizzes;
+                Object.values(users).forEach(userData => {
+                    const qzs = userData.quizzes;
                     if (qzs) {
                         totalKuis += Object.keys(qzs).length;
-                        Object.keys(qzs).forEach(qid => {
-                            if (qzs[qid].results) totalPengerjaan += Object.keys(qzs[qid].results).length;
+                        Object.values(qzs).forEach(quizData => {
+                            if (quizData.results) {
+                                totalPengerjaan += Object.keys(quizData.results).length;
+                            }
                         });
                     }
                 });
             }
 
-            // 2. Hitung dari Model Kuis Viral (quizzes_collections)
+            // 2. Hitung Kuis Viral (quizzes_collections)
             if (viralQuizzes) {
-                const viralIds = Object.keys(viralQuizzes);
-                totalKuis += viralIds.length; // Tambah jumlah kuis viral
+                const viralItems = Object.values(viralQuizzes);
+                totalKuis += viralItems.length;
                 
-                viralIds.forEach(qid => {
-                    const q = viralQuizzes[qid];
-                    // Tambah jumlah pengerjaan dari stats.played
-                    if (q.stats && q.stats.played) {
+                viralItems.forEach(q => {
+                    // LOGIKA FIX: Prioritas hitung dari results agar tidak dobel dengan stats.played
+                    if (q.results) {
+                        totalPengerjaan += Object.keys(q.results).length;
+                    } else if (q.stats && q.stats.played) {
+                        // Jika data lama belum punya folder results, baru pakai stats.played
                         totalPengerjaan += q.stats.played;
                     }
                 });
@@ -247,10 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 3. Jalankan Animasi
             if (quizCounter) { 
+                quizCounter.innerText = "0"; // Reset visual
                 quizCounter.setAttribute('data-target', totalKuis); 
                 animateCounter(quizCounter); 
             }
             if (pengerjaanCounter) { 
+                pengerjaanCounter.innerText = "0"; // Reset visual
                 pengerjaanCounter.setAttribute('data-target', totalPengerjaan); 
                 animateCounter(pengerjaanCounter); 
             }

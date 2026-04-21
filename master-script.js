@@ -242,32 +242,72 @@ window.jalankanMigrasiConfig = async function() {
 };
 
 // FUNGSI UNTUK UPDATE STATS CARD DI DASHBOARD
-function updateDashboardStats() {
-    const statTotalUser = document.getElementById('stat-total-user');
-    const statTotalPremium = document.getElementById('stat-total-premium');
-    const statTotalQuiz = document.getElementById('stat-total-quiz');
+let membershipChart, growthChart, eduDemoChart; // Variabel Global
 
-    // 1. Hitung Total User & Premium secara Realtime
+function updateDashboardStats() {
+    console.log("🚀 Menjalankan Sinkronisasi Statistik Global...");
+
     database.ref('users').on('value', (snapshot) => {
-        let total = 0;
-        let premium = 0;
+        let totalUsers = 0;
+        let totalPremium = 0;
+        let registrationDates = {};
         
-        snapshot.forEach((child) => {
-            total++;
-            if (child.val().is_premium === true) {
-                premium++;
+        // Data Akademik
+        let totalEduFinished = 0;
+        let totalEduSeconds = 0;
+        let eduLocationMap = {};
+
+        snapshot.forEach((userSnapshot) => {
+            const userData = userSnapshot.val();
+            
+            // 1. Hitung User & Premium
+            totalUsers++;
+            if (userData.is_premium === true) totalPremium++;
+
+            // 2. Olah Pertumbuhan (Growth)
+            const timestamp = userData.profile?.createdAt || userData.createdAt;
+            if (timestamp) {
+                const date = new Date(timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                registrationDates[date] = (registrationDates[date] || 0) + 1;
+            }
+
+            // 3. SCANNING AKADEMIK (Deep Scan)
+            if (userData.quizzes) {
+                Object.values(userData.quizzes).forEach(quiz => {
+                    if (quiz.results) {
+                        const resultsArr = Object.values(quiz.results);
+                        totalEduFinished += resultsArr.length;
+
+                        resultsArr.forEach(res => {
+                            totalEduSeconds += (res.timeSpent || 0);
+                            const loc = res.location || "Lokasi Tidak Diketahui";
+                            eduLocationMap[loc] = (eduLocationMap[loc] || 0) + 1;
+                        });
+                    }
+                });
             }
         });
 
-        if (statTotalUser) statTotalUser.innerText = total;
-        if (statTotalPremium) statTotalPremium.innerText = premium;
+        // --- UPDATE UI CARD ---
+        if (document.getElementById('stat-total-user')) document.getElementById('stat-total-user').innerText = totalUsers;
+        if (document.getElementById('stat-total-premium')) document.getElementById('stat-total-premium').innerText = totalPremium;
         
-        console.log(`Stats Updated: ${total} Users, ${premium} Premium`);
+        // Update Waktu Akademik
+        const avgSecs = totalEduFinished > 0 ? Math.round(totalEduSeconds / totalEduFinished) : 0;
+        if (document.getElementById('edu-avg-time')) document.getElementById('edu-avg-time').innerText = formatDuration(avgSecs);
+        if (document.getElementById('edu-total-duration')) document.getElementById('edu-total-duration').innerText = formatDuration(totalEduSeconds);
+
+        // --- RENDER SEMUA CHART ---
+        renderMembershipChart(totalUsers - totalPremium, totalPremium);
+        renderGrowthChart(registrationDates);
+        
+        const sortedLocs = Object.entries(eduLocationMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        renderEduDemographic(sortedLocs.map(i => i[0]), sortedLocs.map(i => i[1]));
     });
 
-    // 2. Hitung Total Kuis Global
+    // Hitung Total Kuis (Global)
     database.ref('quiz_index').on('value', (snapshot) => {
-        if (statTotalQuiz) statTotalQuiz.innerText = snapshot.numChildren();
+        if (document.getElementById('stat-total-quiz')) document.getElementById('stat-total-quiz').innerText = snapshot.numChildren();
     });
 }
 
@@ -276,103 +316,118 @@ window.addEventListener('load', () => {
     updateDashboardStats();
 });
 
-let membershipChart; // Simpan variabel secara global agar bisa di-update
-
-function initCharts(totalFree, totalPremium) {
-    const ctx = document.getElementById('membershipChart').getContext('2d');
+// 1. Render Chart Keanggotaan
+function renderMembershipChart(free, premium) {
+    const canvas = document.getElementById('membershipChart');
+    if (!canvas) return; // Keamanan jika elemen tidak ada
+    const ctx = canvas.getContext('2d');
     
-    // Jika chart sudah ada, hancurkan dulu sebelum buat baru (agar tidak tumpang tindih)
     if (membershipChart) membershipChart.destroy();
-
+    
     membershipChart = new Chart(ctx, {
-        type: 'doughnut', // Gunakan tipe donat agar terlihat modern
+        type: 'doughnut',
         data: {
             labels: ['Gratis', 'Premium'],
-            datasets: [{
-                data: [totalFree, totalPremium],
-                backgroundColor: ['#cbd5e1', '#3b82f6'], // Warna abu-abu vs Biru
-                borderWidth: 0,
-                hoverOffset: 4
+            datasets: [{ 
+                data: [free, premium], 
+                backgroundColor: ['#cbd5e1', '#3b82f6'], 
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            cutout: '70%' // Membuat lubang di tengah lebih besar
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, // Wajib agar tidak melompat
+            layout: { padding: 10 },
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { size: 11, family: 'Poppins' }, padding: 15 } 
+                } 
+            }, 
+            cutout: '75%' 
         }
     });
 }
 
-// Update fungsi updateDashboardStats yang lama agar memanggil initCharts
-function updateDashboardStats() {
-    database.ref('users').on('value', (snapshot) => {
-        let total = 0;
-        let premium = 0;
-        
-        snapshot.forEach((child) => {
-            total++;
-            if (child.val().is_premium === true) {
-                premium++;
-            }
-        });
-
-        let free = total - premium;
-
-        // Update Angka di Stats Card
-        if (document.getElementById('stat-total-user')) document.getElementById('stat-total-user').innerText = total;
-        if (document.getElementById('stat-total-premium')) document.getElementById('stat-total-premium').innerText = premium;
-        
-        // Panggil fungsi gambar grafik
-        initCharts(free, premium);
+// 2. Render Chart Demografi Akademik
+function renderEduDemographic(labels, data) {
+    const canvas = document.getElementById('eduDemographicChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    if (eduDemoChart) eduDemoChart.destroy();
+    
+    eduDemoChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{ 
+                data: data, 
+                backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6'], 
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            layout: { padding: 10 },
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: { boxWidth: 10, font: { size: 10, family: 'Poppins' }, padding: 10 } 
+                } 
+            }, 
+            cutout: '75%' 
+        }
     });
 }
 
-// Update fungsi Grow CHart
-let growthChart;
-
-function updateGrowthChart(snapshot) {
-    const ctx = document.getElementById('growthChart').getContext('2d');
-    const registrationDates = {};
-
-    snapshot.forEach((child) => {
-        const userData = child.val();
-        const timestamp = userData.profile?.createdAt;
-
-        if (timestamp) {
-            // Ubah milidetik menjadi format tanggal YYYY-MM-DD
-            const date = new Date(timestamp).toISOString().split('T')[0];
-            registrationDates[date] = (registrationDates[date] || 0) + 1;
-        }
-    });
-
-    // Ambil label (tanggal) dan data (jumlah user)
-    const labels = Object.keys(registrationDates).sort();
-    const dataPoints = labels.map(date => registrationDates[date]);
-
+// 3. Render Chart Pertumbuhan (Line Chart)
+function renderGrowthChart(dateData) {
+    const canvas = document.getElementById('growthChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Pastikan label tanggal terurut agar grafik tidak acak
+    const labels = Object.keys(dateData).sort();
+    const dataPoints = labels.map(l => dateData[l]);
+    
     if (growthChart) growthChart.destroy();
-
+    
     growthChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'User Baru',
-                data: dataPoints,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4
+            datasets: [{ 
+                label: 'User Baru', 
+                data: dataPoints, 
+                borderColor: '#3b82f6', 
+                backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                fill: true, 
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#3b82f6'
             }]
         },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: {
+                legend: { display: false } // Sembunyikan legend untuk tampilan lebih bersih
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1, font: { size: 11 } },
+                    grid: { color: '#f1f5f9' }
+                },
+                x: {
+                    ticks: { font: { size: 11 } },
+                    grid: { display: false }
+                }
+            } 
         }
     });
 }
@@ -1130,3 +1185,17 @@ function importBatchQuiz() {
         alert("❌ Format JSON Salah!");
     }
 }
+
+//1. Fungsi Pembantu FORMAT WAKTU
+
+function formatDuration(seconds) {
+    if (!seconds || seconds <= 0) return "0d";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+
+    if (h > 0) return `${h}j ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}d`;
+}
+

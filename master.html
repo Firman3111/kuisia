@@ -366,13 +366,35 @@
                     </div>
                 </div>
 
-                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #64748b;">Sebaran Keanggotaan</h3>
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 20px 0;">
+    
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 300px;">
+                        <h3 style="margin-bottom: 15px; font-size: 0.9rem; color: #64748b; text-transform: uppercase; ">Keanggotaan</h3>
                         <canvas id="membershipChart"></canvas>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #64748b;">Pertumbuhan User</h3>
+
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 300px;">
+                        <h3 style="margin-bottom: 15px; font-size: 0.9rem; color: #64748b; text-transform: uppercase;">Sebaran Wilayah (Edu)</h3>
+                        <canvas id="eduDemographicChart"></canvas>
+                    </div>
+
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; height: 300px;">
+                        <h3 style="margin-bottom: 20px; font-size: 0.9rem; color: #64748b; text-transform: uppercase;">Efisiensi Akademik</h3>
+                        <div style="margin-bottom: 15px;">
+                            <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">Rata-rata Waktu</p>
+                            <h2 id="edu-avg-time" style="margin: 0; color: #1e293b;">0m 0s</h2>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 10px 0;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">Total Investasi Waktu</p>
+                            <h2 id="edu-total-duration" style="margin: 0; color: #6366f1;">0j 0m</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; font-size: 0.9rem; color: #64748b; text-transform: uppercase;">Pertumbuhan User Baru</h3>
+                    <div style="height: 250px;">
                         <canvas id="growthChart"></canvas>
                     </div>
                 </div>

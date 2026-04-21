@@ -750,12 +750,25 @@ function goToHome() {
 }
 
 
-// MODIFIKASI: Fungsi saveResultToDatabase (Tambahkan Kelas & No Absen)
-function saveResultToDatabase(finalScore, duration) {
+// MODIFIKASI: Fungsi saveResultToDatabase dengan Deteksi Lokasi Otomatis
+async function saveResultToDatabase(finalScore, duration) {
     if (quizId && adminIdGlobal) {
         const config = window.currentConfig || {};
         
-        // Hitung Max Score
+        // --- FITUR BARU: AMBIL LOKASI SISWA ---
+        let userLocation = "Lokasi Tidak Diketahui";
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const geoData = await response.json();
+            // Kita ambil format: "Kota, Provinsi" (Contoh: Surabaya, East Java)
+            if (geoData.city && geoData.region) {
+                userLocation = `${geoData.city}, ${geoData.region}`;
+            }
+        } catch (err) {
+            console.warn("Gagal mengambil lokasi, menggunakan default.");
+        }
+        // --------------------------------------
+
         const tPG = questions.filter(q => !q.type || q.type === 'pg').length;
         const tES = questions.filter(q => q.type === 'essay').length;
         const tHT = questions.filter(q => q.isHots || q.tipe_soal === "HOTS").length;
@@ -763,7 +776,6 @@ function saveResultToDatabase(finalScore, duration) {
                          (tES * (parseFloat(config.essayPoin) || 0)) + 
                          (tHT * (parseFloat(config.bonusHots) || 0));
 
-        // Petakan detail jawaban dari log
         const fullResultsDetail = questions.map((q, index) => {
             const log = userAnswersLog[index];
             return {
@@ -771,11 +783,12 @@ function saveResultToDatabase(finalScore, duration) {
                 tipe: q.type || 'pg',
                 jawabanSiswa: log ? log.userSelected : "Tidak dijawab",
                 jawabanBenar: q.answer,
-                status: log ? (log.isCorrect ? "Benar" : "Salah") : "Tidak dijawab"
+                status: log ? (log.isCorrect ? "Benar" : "Salah") : "Tidak dijawab",
+                // Tambahkan info lokasi per baris jika diperlukan untuk audit mendalam
+                location: userLocation 
             };
         });
 
-        // Kumpulkan daftar soal yang salah (untuk Chart "Paling Sering Salah")
         const wrongAnswersOnly = fullResultsDetail
             .filter(item => item.status === "Salah")
             .map(item => item.pertanyaan);
@@ -787,13 +800,15 @@ function saveResultToDatabase(finalScore, duration) {
             score: finalScore,
             maxScore: totalMax,
             duration: duration,
-            date: firebase.database.ServerValue.TIMESTAMP, // Format Firebase untuk Chart Trend
+            location: userLocation, // <-- INI YANG AKAN DIBACA DASHBOARD MASTER
+            timeSpent: Math.round(duration), // Untuk hitung efisiensi waktu
+            date: firebase.database.ServerValue.TIMESTAMP,
             details: fullResultsDetail,
             wrongAnswersDetail: wrongAnswersOnly 
         };
         
         database.ref(`users/${adminIdGlobal}/quizzes/${quizId}/results`).push(resultPayload)
-        .then(() => console.log("Data komplit tersimpan."))
+        .then(() => console.log("Data komplit (termasuk lokasi) tersimpan."))
         .catch(err => console.error("Gagal simpan:", err));
     }
 }

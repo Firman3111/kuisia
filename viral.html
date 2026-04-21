@@ -764,15 +764,33 @@
         let userLocation = "Lokasi Tidak Diketahui";
 
         // Deteksi lokasi via IP (Gratis & Open Source)
-        fetch('http://ip-api.com/json/')
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === "success") {
-                    // Kita ambil Provinsi & Kota
-                    userLocation = `${data.regionName}, ${data.city}`;
+        async function fetchLocation() {
+            try {
+                // Menggunakan HTTPS (Wajib untuk GitHub Pages)
+                const response = await fetch('https://ipapi.co/json/');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            })
-            .catch(() => console.log("Gagal memuat lokasi, menggunakan default."));
+                
+                const data = await response.json();
+                
+                if (data.city) {
+                    // Kita ambil Provinsi dan Kota
+                    userLocation = `${data.region}, ${data.city}`;
+                    console.log("📍 Lokasi terdeteksi (HTTPS):", userLocation);
+                } else {
+                    userLocation = "Indonesia, General";
+                }
+            } catch (err) {
+                console.error("❌ Gagal ambil lokasi karena:", err.message);
+                // Jika API utama gagal (limit), coba API cadangan HTTPS
+                userLocation = "Lokasi Tidak Diketahui";
+            }
+        }
+
+        // Panggil fungsinya segera setelah didefinisikan
+        fetchLocation();
 
         window.startViralQuiz = function() {
             const nameInput = document.getElementById('player-name');
