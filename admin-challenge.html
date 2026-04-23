@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Challenge - Kuisia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="icon" type="image/png" href="Kuisia_icon.png">
+    <style>
+        :root {
+            --accent-challenge: #10b981; /* Hijau Challenge */
+            --accent-challenge-sub: #b2e4d3; 
+            --accent-challenge-sec: #40475f; 
+        }
+
+        /* Memastikan Header di atas dan Container di bawahnya */
+        .admin-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 25px;
+            background: var(--accent-challenge);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .container-admin {
+            display: flex; /* Ini membuat Sidebar dan Main berjajar kiri-kanan */
+            min-height: calc(100vh - 70px); /* 70px adalah perkiraan tinggi header */
+        }
+
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: white;
+            padding: 20px 10px;
+        }
+
+        .main-content {
+            flex: 1; /* Mengambil sisa ruang kanan */
+            padding: 30px;
+            background-color: #f8fafc;
+            min-width: 0; /* Mencegah konten meluap */
+        }
+
+        .btn-challenge {
+            background: var(--accent-challenge);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        a.btn-challenge {
+            color: var(--accent-challenge);
+            background: var(--white);
+            padding: 5px 15px;
+        }
+
+        a.btn-challenge:hover {
+            color: var(--white);
+            background: var(--accent-challenge-sub);
+            padding: 5px 15px;
+        }
+
+        .hidden { display: none; }
+
+        /* Grid Kartu Kuis */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Container Utama Daftar Soal */
+        #questions-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* Kartu Per Soal */
+        .question-item-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .question-item-card:hover {
+            border-color: var(--accent-challenge);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Header di dalam Kartu Soal (Nomor Soal & Tombol Hapus) */
+        .question-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .question-number {
+            font-weight: 700;
+            color: var(--accent-challenge);
+            background: #ecfdf5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove-question {
+            background: #fff1f2;
+            color: #e11d48;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-remove-question:hover {
+            background: #e11d48;
+            color: white;
+        }
+
+        /* Styling Input di dalam Builder */
+        .question-item-card .form-group {
+            margin-bottom: 15px;
+        }
+
+        .question-item-card label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Grid untuk Opsi Jawaban */
+        .options-builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Container per item soal */
+        .question-item {
+            display: flex !important;
+            flex-direction: column !important; /* Paksa ke bawah */
+            gap: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .question-item:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Styling Textarea Soal */
+        .q-text {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            margin: 12px 0;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .q-text:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Pastikan textarea mengambil lebar penuh */
+        .question-item textarea.q-text {
+            width: 100% !important;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        /* Grid pilihan ganda: 2 kolom di desktop, 1 kolom di mobile */
+        .question-item .options-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr; /* Ini yang buat A & B sejajar, C & D sejajar */
+            gap: 12px;
+            width: 100%;
+        }
+
+        .options-grid input {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .options-grid input:focus {
+            border-color: #6366f1; /* Aksen ungu untuk pilihan */
+            outline: none;
+        }
+
+        /* Selector Jawaban Benar */
+        .answer-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .q-answer {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Pastikan tab content mengarah ke bawah */
+        #tab-create-challenge {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Memastikan grid form tidak memaksa elemen ke samping jika tidak diinginkan */
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Membuat button aksi responsif: horizontal di desktop, vertikal di mobile */
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sembunyikan tombol menu di Desktop */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .exit-button:hover {
+            background-color: #fee2e2 !important; /* Merah sangat muda */
+            color: #b91c1c !important; /* Merah gelap */
+        }
+
+        @media (max-width: 768px) {
+            .options-builder-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-toggle {
+                display: block; /* Munculkan hanya di HP */
+            }
+
+            /* Paksa Sidebar jadi laci yang bisa digeser */
+            .sidebar {
+                position: fixed;
+                left: -280px; /* Sembunyi di kiri luar layar */
+                top: 0;
+                bottom: 0;
+                width: 260px;
+                z-index: 9999;
+                transition: all 0.3s ease-in-out;
+            }
+
+            /* Class untuk memunculkan sidebar */
+            .sidebar.active {
+                left: 0;
+                margin-left: 25px;
+            }
+
+            /* Lapisan gelap di belakang sidebar */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(2px);
+                z-index: 9998;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+              .action-buttons {
+                flex-direction: column;
+            }
+
+            .question-item .options-grid {
+            grid-template-columns: 1fr !important;
+            }
+
+            /* Pastikan container pembungkus soal juga vertikal */
+            #questions-builder {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 20px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+    <header class="admin-header">
+        <div class="header-brand">
+            <button id="mobile-menu-btn" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span style="color: var(--white); font-weight: 700;">Kuisia <span style="font-weight: 400; color: var(--accent-challenge-sub);">Challenge</span></span>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="admin.html" class="btn-challenge" style="text-decoration: none; font-size: 0.8rem;">
+                </i> Akademik
+            </a>
+            <button class="logout-btn" onclick="logout()" style="display: flex; align-items: center; gap: 8px;">
+                </i> <span style="font-weight: 600;">Log Out</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="container-admin" style="max-width: 1400px; margin: 0 auto;">
+
+        <aside class="sidebar" style="margin-top: 35px; padding: 25px; border-radius: 12px; min-height: 85vh; border: 1px solid #eef0f7;">
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="switchTab('list-challenge')">
+                    <i class="fas fa-bolt"></i> <span>Koleksi Challenge</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('create-challenge')">
+                    <i class="fas fa-plus-circle"></i> <span>Buat Baru</span>
+                </button>
+
+                <div style="margin-top: 20px; padding: 10px; border-top: 1px solid #eee;">
+                    <p id="welcome-message" style="font-size: 0.8rem; color: #666; font-style: italic; margin-bottom: 15px;"></p>
+                    
+                    <button class="nav-item exit-button" onclick="window.location.href='index.html'" style="color: #ef4444; width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; transition: 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> 
+                        <span>Kembali ke Beranda</span>
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        
+
+        <main class="main-content">
+
+            <div id="welcome-section" style="margin-bottom: 25px;">
+                <div class="profile-preview-card" style="display: flex;  gap: 15px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #eef0f7;">
+                    <div class="preview-text" style="padding: 15px; align-items: flex-start; line-height: 15px;">
+                        <h3 style="margin: 0; font-size: 1.1rem;">Halo, <span id="admin-name" style="color: var(--accent-challenge);">Admin</span></h3>
+                        <p style="margin: 0; font-size: 0.8rem; color: #64748b;">
+                            <span id="badge-status">Gratis</span> | Exp: <span id="expiry-display">-</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <section id="tab-list-challenge" class="tab-content">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-layer-group"></i> Koleksi Challenge Anda</h2>
+                    <button class="btn-challenge" onclick="switchTab('create-challenge')">+ Challenge Baru</button>
+                </div>
+                
+                <div id="challenge-list-container" class="quiz-grid">
+                    <p class="loading-text">Memuat data challenge...</p>
+                </div>
+            </section>
+
+            <section id="tab-create-challenge" class="tab-content hidden">
+                <div class="admin-card" style="padding: 25px; display: block;"> <div class="section-header">
+                        <h2><i class="fas fa-edit"></i> Informasi Utama</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group full">
+                            <label>Judul Challenge</label>
+                            <input type="text" id="challenge-title" class="input-modern" placeholder="Contoh: Tebak Logo Brand Dunia">
+                        </div>
+                        
+                        <div class="input-group full">
+                            <label>Deskripsi Singkat</label>
+                            <textarea id="challenge-desc" class="input-modern" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> Thumbnail Challenge</label>
+                            <input type="file" id="challenge-thumbnail-input" class="input-modern" accept="image/*" onchange="previewThumbnail(this)">
+                            
+                            <div id="thumbnail-preview-container" style="margin-top: 10px; display: none;">
+                                <img id="img-preview" src="" style="width: 200px; height: 110px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent-challenge);">
+                                <p style="font-size: 0.7rem; color: #666;">Preview Tampilan Kartu</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #f0f2f5;">
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-tasks"></i> Daftar Soal</h2>
+                    </div>
+
+                    <div id="questions-builder"></div>
+
+                    <div class="action-buttons">
+                        <button type="button" class="btn-primary" onclick="addNewQuestion()" style="background: var(--accent-challenge-sec); flex: 1; justify-content: center; color: var(--white);">
+                            <i class="fas fa-plus"></i> Tambah Soal
+                        </button>
+                        <button type="button" class="btn-challenge" onclick="saveChallenge()" style="flex: 2; justify-content: center;">
+                            <i class="fas fa-save"></i> Publikasikan
+                        </button>
+                    </div>
+                    
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script src="admin-challenge-script.js"></script>
+</body>
+</html>

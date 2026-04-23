@@ -1447,6 +1447,11 @@ body {
     color: #a0aec0;
 }
 
+.switch-dashboard-btn:hover {
+    background: var(--accent-light) !important;
+    transform: translateY(-1px);
+}
+
 /* --- RESPONSIVE DESIGN --- */
 /* Layar Tablet & HP (Lebar di bawah 768px) */
 @media (max-width: 768px) {
@@ -1518,5 +1523,15 @@ body {
         /* Sedikit penyesuaian ukuran agar pas di HP */
         width: 90%; 
         max-width: 280px;
+    }
+}
+
+/* Responsif untuk layar HP */
+@media (max-width: 480px) {
+    .switch-dashboard-btn .btn-text {
+        display: none; /* Sembunyikan teks di HP, sisakan ikon bolt saja */
+    }
+    .switch-dashboard-btn {
+        padding: 5px 10px;
     }
 }

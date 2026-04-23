@@ -225,6 +225,28 @@
     background: #f1f1f1;
 }
 
+/* Animasi Khusus Challenge */
+@keyframes shake-challenge {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+/* Style tombol saat diklik di mode Challenge */
+.option-btn.correct {
+    background-color: #10b981 !important; /* Hijau */
+    color: white !important;
+    border-color: #059669 !important;
+    transition: all 0.2s ease;
+}
+
+.option-btn.wrong {
+    background-color: #ef4444 !important; /* Merah */
+    color: white !important;
+    border-color: #dc2626 !important;
+    animation: shake-challenge 0.4s dark; /* Efek Bergetar */
+}
+
 /* Khusus Mobile: Jika layar sangat kecil, kecilkan sedikit tombolnya */
 @media (max-width: 400px) {
     .nav-btn {
@@ -801,10 +823,7 @@
             score = 0;
             quizStartTime = Date.now();
 
-            // Update play count di Firebase secara realtime (+1)
-            database.ref(`quizzes_collections/${quizId}/stats/played`).transaction((currentValue) => {
-                return (currentValue || 0) + 1;
-            });
+            // HAPUS BAGIAN TRANSACTION DI SINI //
 
             document.getElementById('setup-container').classList.add('hidden');
             document.getElementById('quiz-area').classList.remove('hidden');
@@ -813,42 +832,39 @@
         };
 
         window.showQuestion = function() {
-        if (currentQuestionIndex >= questions.length) {
-            window.finishQuiz();
-            return;
-        }
+            if (currentQuestionIndex >= questions.length) {
+                window.finishQuiz();
+                return;
+            }
 
-        const q = questions[currentQuestionIndex];
-        if (!q) return;
+            const q = questions[currentQuestionIndex];
+            if (!q) return;
 
-        // Update Progress Bar
-        const progress = ((currentQuestionIndex) / questions.length) * 100;
-        document.getElementById('progress-fill').style.width = `${progress}%`;
+            // Update Progress Bar
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
 
-        document.getElementById('q-number').innerText = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
-        
-        // --- PERBAIKAN DI SINI ---
-        // Menggunakan q.q karena di JSON kita pakai kunci "q"
-        document.getElementById('q-text').innerHTML = q.q || q.text || q.question;
+            document.getElementById('q-number').innerText = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('q-text').innerHTML = q.q || q.text || q.question;
 
-        const container = document.getElementById('options-container');
-        container.innerHTML = '';
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
 
-        const options = q.options || [];
-        options.forEach((opt, index) => { // Tambahkan index untuk cek jawaban
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            
-            // --- PERBAIKAN DI SINI ---
-            // Kita bandingkan index pilihan dengan q.correct
-            btn.onclick = () => window.checkAnswer(index, q.correct);
-            
-            container.appendChild(btn);
-        });
+            const options = q.options || [];
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                
+                // Simpan index di dataset agar mudah dicari saat checkAnswer
+                btn.dataset.index = index; 
+                btn.onclick = () => window.checkAnswer(index, q.correct);
+                
+                container.appendChild(btn);
+            });
 
-        startTimer();
-    };
+            startTimer();
+        };
 
         function startTimer() {
             timeLeft = 30;
@@ -867,61 +883,79 @@
         window.checkAnswer = function(userChoice, correctAnswer) {
             clearInterval(timerInterval);
             
-            if (userChoice === correctAnswer && userChoice !== null) {
+            const buttons = document.querySelectorAll('.option-btn');
+            let selectedBtn = null;
+            let correctBtn = null;
+
+            buttons.forEach(btn => {
+                // Cari tombol berdasarkan data-index yang kita simpan tadi
+                if (parseInt(btn.dataset.index) === userChoice) selectedBtn = btn;
+                if (parseInt(btn.dataset.index) === correctAnswer) correctBtn = btn;
+            });
+
+            // Validasi Jawaban (Memastikan userChoice tidak null/soal tidak timeout)
+            if (userChoice !== null && userChoice === correctAnswer) {
                 score += 10;
-                document.getElementById('sound-correct')?.play();
+                selectedBtn?.classList.add('correct');
+                document.getElementById('sound-correct')?.play().catch(e => {});
             } else {
-                document.getElementById('sound-wrong')?.play();
+                selectedBtn?.classList.add('wrong');
+                correctBtn?.classList.add('correct'); // Tetap tunjukkan jawaban benar
+                document.getElementById('sound-wrong')?.play().catch(e => {});
+                if (navigator.vibrate) navigator.vibrate(300);
             }
 
             currentQuestionIndex++;
-            setTimeout(window.showQuestion, 500);
+            setTimeout(() => {
+                window.showQuestion();
+            }, 1200);
         };
 
         window.finishQuiz = function() {
             // 1. Hentikan timer kuis
             clearInterval(timerInterval);
             
-            // 2. Hitung durasi pengerjaan (selisih waktu)
+            // 2. Hitung durasi pengerjaan
             const endTime = Date.now();
             let durationInSeconds = 0;
-            
             if (quizStartTime > 0) {
                 durationInSeconds = Math.floor((endTime - quizStartTime) / 1000);
             }
 
             // 3. Update UI Tampilan Hasil
-            document.getElementById('quiz-area').classList.add('hidden');
-            document.getElementById('result-area').classList.remove('hidden');
-            document.getElementById('final-score').innerText = score;
+            // Gunakan optional chaining (?.) agar jika ID tidak ada, web tidak crash
+            document.getElementById('quiz-area')?.classList.add('hidden');
+            document.getElementById('result-area')?.classList.remove('hidden');
+            const finalScoreElement = document.getElementById('final-score');
+            if (finalScoreElement) finalScoreElement.innerText = score;
 
             // 4. Siapkan data hasil pengerjaan
             const resultData = {
                 name: playerName || "Anonim",
                 score: score,
-                timeSpent: durationInSeconds, // Detik pengerjaan
+                timeSpent: durationInSeconds,
                 location: userLocation,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
+            }; // <--- Tadi error di sini karena kurang titik koma
 
-            // 5. Kirim data ke Firebase
+            // 5. Kirim data ke Firebase & Update Statistik
             if (quizId) {
-                console.log("Mengirim hasil kuis ke Firebase untuk ID:", quizId);
+                console.log("Memperbarui statistik dan menyimpan hasil...");
+
+                // A. Simpan detail skor ke node results
+                database.ref(`quizzes_collections/${quizId}/results`).push(resultData);
                 
-                database.ref(`quizzes_collections/${quizId}/results`).push(resultData)
-                    .then(() => {
-                        console.log("✅ Berhasil menyimpan durasi & skor ke node results.");
-                    })
-                    .catch((error) => {
-                        console.error("❌ Gagal menyimpan ke results:", error);
-                    });
-                
-                // Panggil fungsi update statistik (tambah count di node stats/played)
+                // B. Update angka 'played' (+1)
+                database.ref(`quizzes_collections/${quizId}/stats/played`).transaction((currentCount) => {
+                    return (currentCount || 0) + 1;
+                });
+
+                // C. Jalankan fungsi tambahan jika ada
                 if (typeof updateStatistikPengerjaan === "function") {
                     updateStatistikPengerjaan(quizId, authorId);
                 }
             } else {
-                console.error("❌ Gagal mengirim hasil: quizId tidak ditemukan di URL.");
+                console.error("❌ Gagal mengirim hasil: quizId tidak ditemukan.");
             }
 
             // 6. Efek Suara & Visual (Confetti)
@@ -933,9 +967,9 @@
                         origin: { y: 0.6 }
                     });
                 }
-                document.getElementById('sound-result-excellent')?.play();
+                document.getElementById('sound-result-excellent')?.play().catch(() => {});
             } else {
-                document.getElementById('sound-result-good')?.play();
+                document.getElementById('sound-result-good')?.play().catch(() => {});
             }
         };
 

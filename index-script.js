@@ -903,25 +903,12 @@ function loadViralQuizzes() {
 // Panggil fungsi saat halaman siap
 document.addEventListener('DOMContentLoaded', loadViralQuizzes);
 
-window.playBatchQuiz = async function(quizId) {
-    // 1. Definisikan referensi statistik
-    const playRef = database.ref(`quizzes_collections/${quizId}/stats/played`);
-    
-    try {
-        // 2. Gunakan 'await' agar browser MENUNGGU angka bertambah sebelum pindah halaman
-        await playRef.transaction((currentCount) => {
-            return (currentCount || 0) + 1;
-        });
-        console.log("Play count updated!");
-    } catch (error) {
-        console.error("Gagal update stats:", error);
-    }
-
-    // 3. Simpan ID dan Mode
+window.playBatchQuiz = function(quizId) {
+    // 1. Simpan ID dan Mode ke sessionStorage (Tanpa update database di sini)
     sessionStorage.setItem('selectedQuizId', quizId);
     sessionStorage.setItem('quizMode', 'batch'); 
     
-    // 4. Baru pindah halaman
+    // 2. Langsung pindah ke halaman viral.html
     window.location.href = 'viral.html'; 
 };
 

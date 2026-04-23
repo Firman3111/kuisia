@@ -193,6 +193,34 @@ body {
 
 .mobile-header button { background: none; border: none; color: white; font-size: 1.2rem; }
 
+/* Tombol Toggle Master */
+.menu-toggle {
+    display: none; /* Sembunyi di desktop */
+    position: fixed;
+    top: 25px;
+    right: 15px;
+    z-index: 1100; /* Pastikan sangat tinggi agar di atas sidebar */
+    background: #ffc107; /* Warna emas */
+    color: #1a1a1a;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Overlay Gelap */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+}
 
 /* --- UPDATE RESPONSIVE LOGIC --- */
 @media (max-width: 1024px) {
@@ -248,6 +276,14 @@ body {
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         cursor: pointer;
+    }
+}
+
+@media (max-width: 992px) {
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

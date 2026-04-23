@@ -1199,3 +1199,21 @@ function formatDuration(seconds) {
     return `${s}d`;
 }
 
+function toggleMasterSidebar() {
+    const sidebar = document.getElementById('master-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    // Toggle class untuk memunculkan sidebar
+    sidebar.classList.toggle('mobile-active');
+    overlay.classList.toggle('active');
+}
+
+// Menutup sidebar otomatis saat salah satu menu diklik (agar tidak menutupi konten)
+document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 992) {
+            toggleMasterSidebar();
+        }
+    });
+});
+

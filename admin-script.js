@@ -635,19 +635,29 @@ if (formSoal) {
             database.ref(`users/${userId}/quizzes/${quizId}`).update(updates);
             database.ref(`quiz_index/${quizId}`).update(updates);
 
-            // --- 7. RESET FORM ---
-            quill.setContents([]); 
-            uploadedPhotos = []; 
-            if (typeof renderPhotoPreviews === "function") renderPhotoPreviews();
+            // --- 7. RESET FORM (VERSI FIXED) ---
 
-            // Reset Input Essay
+            // 1. Reset Editor Teks (Quill)
+            quill.setContents([]); 
+
+            // 2. RESET TOTAL GAMBAR (Agar tidak nyangkut ke soal berikutnya)
+            uploadedPhotos = []; 
+            window.uploadedPhotos = []; // Pastikan variabel global juga kosong
+            const inputFoto = document.getElementById('image-upload');
+            if (inputFoto) inputFoto.value = ""; // Bersihkan path file di input HTML
+
+            // 3. Update UI Upload (Tombol & List Kecil)
+            if (typeof renderPhotoPreviews === "function") renderPhotoPreviews();
+            if (typeof updateUploadButton === "function") updateUploadButton();
+
+            // 4. Reset Input Essay (Jika ada)
             const inputKunci = document.getElementById('input-kunci-essay');
             if (inputKunci) inputKunci.value = "";
 
-            // Reset Opsi PG
+            // 5. Reset Opsi PG
             const containerOpsi = document.getElementById('dynamic-options-container');
             const selectJawaban = document.getElementById('input-jawaban');
-            
+
             if (containerOpsi) containerOpsi.innerHTML = ""; 
             if (selectJawaban) {
                 selectJawaban.innerHTML = '<option value="">-- Pilih Jawaban Benar --</option>';
@@ -655,21 +665,30 @@ if (formSoal) {
 
             window.optionCount = 0; 
             if (typeof window.addOptionField === "function") {
-                window.addOptionField(); // A
-                window.addOptionField(); // B
+                window.addOptionField(); // Munculkan kembali kolom A
+                window.addOptionField(); // Munculkan kembali kolom B
             }
 
-            // Refresh UI
+            // --- BAGIAN PALING PENTING ---
+            // 6. PAKSA PREVIEW HP UNTUK BERSIH (Clear mockup)
+            if (typeof window.updateLivePreview === "function") {
+                window.updateLivePreview(); 
+            }
+
+            // 7. Refresh Data Lainnya
             if (window.updateLiveProgress) window.updateLiveProgress(); 
             if (window.loadQuestions) window.loadQuestions(quizId);
             if (typeof loadUserQuizzes === "function") loadUserQuizzes();
 
             showNotif("Berhasil", `Soal disimpan. (${totalSoal} soal terdaftar)`);
+
         })
+
         .catch(err => {
             console.error("Firebase Error:", err);
             showNotif("Gagal", "Terjadi kesalahan.");
         });
+
     });
 }
 
@@ -3120,9 +3139,14 @@ function renderPhotoPreviews() {
 }
 
 function hapusFoto(index) {
-    uploadedPhotos.splice(index, 1); // Hapus dari array
-    renderPhotoPreviews();
-    updateUploadButton();
+    window.uploadedPhotos.splice(index, 1); // Hapus dari array global
+    if (typeof uploadedPhotos !== 'undefined') uploadedPhotos = window.uploadedPhotos;
+
+    renderPhotoPreviews(); // Update list kecil di bawah tombol upload
+    updateUploadButton();  // Update status tombol (buka gembok jika tadi penuh)
+    
+    // TAMBAHKAN INI: Agar di mockup HP juga terhapus
+    window.updateLivePreview(); 
 }
 
 function updateUploadButton() {
@@ -3246,21 +3270,18 @@ window.updateLivePreview = function() {
         previewSoalText.parentNode.insertBefore(previewImgCont, previewSoalText);
     }
 
+    // Tambahkan baris ini di dalam window.updateLivePreview bagian Gambar Soal
     if (previewImgCont) {
         previewImgCont.innerHTML = ""; 
-        // Selalu ambil dari window.uploadedPhotos
         const fotoTersedia = window.uploadedPhotos || [];
         
         if (fotoTersedia.length > 0) {
-            fotoTersedia.forEach(url => {
-                const img = document.createElement('img');
-                img.src = url;
-                img.style = "width:100%; border-radius:12px; margin-bottom:10px; display:block; border:1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);";
-                previewImgCont.appendChild(img);
-            });
+            // ... (kode looping img Mas sudah benar) ...
             previewImgCont.style.display = "block";
         } else {
+            // PASTIKAN INI ADA
             previewImgCont.style.display = "none";
+            previewImgCont.innerHTML = ""; 
         }
     }
 

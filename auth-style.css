@@ -166,3 +166,12 @@ body {
     color: #aaa;
     font-size: 0.8rem;
 }
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#quizSelectionModal > div {
+    animation: modalFadeIn 0.3s ease-out;
+}
