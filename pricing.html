@@ -141,7 +141,7 @@
             <button id="mobile-menu-btn" class="menu-toggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span>
+            <a href="index.html" style="color: white; text-decoration: none;"><span>Kuisia</span></a>
         </div>
 
         <nav class="nav-menu" id="nav-menu">
@@ -196,7 +196,9 @@
                 <li><i class="fas fa-check-circle"></i> Analisis Nilai Mendalam</li>
                 <li><i class="fas fa-check-circle"></i> Tanpa Iklan & Watermark</li>
             </ul>
-            <button onclick="openModal()" class="btn-primary">Dapatkan Akses Sekarang</button>
+            <button onclick="openModal('Pro', 'Nikmati fitur kuis privat, tanpa iklan, dan analisis mendalam.')" class="btn-primary">
+                Dapatkan Akses Sekarang
+            </button>
         </div>
     </div>
 </main>
@@ -227,7 +229,7 @@
                     <option value="va">Virtual Account Bank</option>
                 </select>
 
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">Dapatkan Akses Sekarang</button>
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">Hubungi CS Kuisia</button>
             </form>
         </div>
     </div>
@@ -237,9 +239,17 @@
         const closeBtn = document.querySelector('.close-btn');
         const proForm = document.getElementById('pro-form');
 
+        // Deklarasikan variabel di luar agar bisa diakses oleh fungsi submit
+        let paketDipilih = ""; 
+
         function openModal(title, desc) {
-            document.getElementById('modal-title').innerText = "Upgrade ke Paket" +title;
+            // Simpan nilai title ke variabel luar
+            paketDipilih = title; 
+            
+            // Update teks di modal (Tambahkan spasi setelah kata Paket)
+            document.getElementById('modal-title').innerText = "Upgrade ke Paket " + title;
             document.getElementById('modal-desc').innerText = desc;
+            
             modal.style.display = 'block';
         }
 
@@ -247,30 +257,30 @@
         window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
 
         proForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const submitBtn = proForm.querySelector('button[type="submit"]');
+        e.preventDefault();
+        const submitBtn = proForm.querySelector('button[type="submit"]');
 
-            // --- TAMBAHKAN BARIS INI ---
-            submitBtn.classList.add('btn-loading');
-            submitBtn.innerHTML = '<span class="spinner"></span> Memproses...';
-            // ---------------------------
+        submitBtn.classList.add('btn-loading');
+        submitBtn.innerHTML = '<span class="spinner"></span> Memproses...';
 
-            const nama = document.getElementById('user-name').value;
-            const wa = document.getElementById('user-wa').value;
-            const metode = document.getElementById('payment-method').value;
+        const nama = document.getElementById('user-name').value;
+        const wa = document.getElementById('user-wa').value;
+        const metode = document.getElementById('payment-method').value;
 
-            setTimeout(() => {
-                const message = `Halo, saya ${nama}. Saya ingin berlangganan Paket Pro via ${metode}. Nomor WA saya: ${wa}`;
-                const waUrl = `https://wa.me/628123456789?text=${encodeURIComponent(message)}`;
-                
-                window.open(waUrl, '_blank');
-                
-                // Reset tombol
-                modal.style.display = 'none';
-                submitBtn.classList.remove('btn-loading');
-                submitBtn.innerHTML = 'Dapatkan Akses Sekarang';
-            }, 1500); 
-        });
+        setTimeout(() => {
+            // Gunakan paketDipilih agar tidak muncul 'undefined' atau teks statis 'Pro'
+            const message = `Halo Admin Kuisia, saya ${nama}. Saya ingin berlangganan Paket ${paketDipilih} via ${metode}. Nomor WA saya: ${wa}`;
+            const waUrl = `https://wa.me/628123456789?text=${encodeURIComponent(message)}`;
+            
+            window.open(waUrl, '_blank');
+            
+            // Reset UI
+            modal.style.display = 'none';
+            proForm.reset(); // Mengosongkan form kembali
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.innerHTML = 'Dapatkan Akses Sekarang';
+        }, 1500); 
+    });
 
         const menuBtn = document.getElementById('mobile-menu-btn');
         const navMenu = document.getElementById('nav-menu');
