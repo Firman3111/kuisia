@@ -1171,14 +1171,25 @@ function importBatchQuiz() {
 
     try {
         const data = JSON.parse(jsonText);
+        
+        // Ambil ID referensi baru
         const newRef = database.ref('quizzes_collections').push();
         
+        // --- TAMBAHAN LOGIKA BRANDING ---
+        // Kita paksa masukkan brandingAd yang sedang aktif ke dalam kuis viral ini
+        const activeBranding = {
+            brandColor: "#270c30", // Sesuaikan dengan warna brand Mas
+            logoUrl: "Kuisia_icon.png", // Ganti dengan URL logo sponsor yang tersimpan
+            motivation: "Terus Belajar Bersama Kuisia!"
+        };
+
         newRef.set({
             ...data,
+            brandingAd: activeBranding, // Pastikan field ini masuk ke koleksi viral
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             stats: { played: 0 }
         }).then(() => {
-            alert("✅ Berhasil diunggah ke Koleksi Viral!");
+            alert("✅ Berhasil diunggah ke Koleksi Viral dengan Branding!");
             jsonInput.value = "";
         });
     } catch (e) {

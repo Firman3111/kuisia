@@ -513,15 +513,15 @@
 
         /* Styling Tagline */
         .main-tagline-splash {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text);
-            margin-top: -15px;
+            margin-top: -10px;
             text-align: center;
         }
 
         .sub-tagline-splash {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 400;
             color: #888;
             opacity: 0;
@@ -552,6 +552,16 @@
             
             /* 31% sampai 100%: Posisi tetap di luar (diam/jeda) */
             100% { left: 150%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #branding-logo-area img {
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
         }
 
     /* Responsif untuk HP - Pojok Kanan Atas */
@@ -587,27 +597,34 @@
 
 <body style="background: var(--bg-admin);">
     <div class="quiz-container">
-        <div id="header-branding" style="text-align: center; margin-top: 20px;">
-            <div id="splashLogo" class="splash-logo-container">
-                <div style="position: relative;">
-                    <img src="Kuisia_color.png" alt="Logo" style="width:100%; height:auto;">
-                    <div class="shimmer-layer"></div>
-                </div>
-            </div>
 
-            <div class="main-tagline-splash">
-                <span class="splash-word" id="sw1">Aku,</span>
-                <span class="splash-word" id="sw2">Kamu,</span>
-                <span class="splash-word" id="sw3">Kita</span>
+        <div class="branding-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 40px;">
+            <div id="branding-logo-area" style="text-align: center; "></div>
+
+            <div id="branding-divider" style="display: none; width: 2px; height: 50px; background: #e1e8f5; border-radius: 10px;"></div>
+
+            <div id="header-branding" style="text-align: center;">
+                <div id="splashLogo" class="splash-logo-container" style="margin: 0 auto 10px auto;">
+                    <div style="position: relative;">
+                        <img src="Kuisia_color.png" alt="Logo" style="width:90%; height:auto; display: block;">
+                        <div class="shimmer-layer"></div>
+                    </div>
+                </div>
+
+                <div class="main-tagline-splash">
+                    <span class="splash-word" id="sw1">Aku,</span>
+                    <span class="splash-word" id="sw2">Kamu,</span>
+                    <span class="splash-word" id="sw3">Kita</span>
+                </div>
+                <div id="subSplash" class="sub-tagline-splash" style="margin-bottom: 0;">Belajar Bersama</div>
             </div>
-            <div id="subSplash" class="sub-tagline-splash">Belajar Bersama</div>
         </div>
 
         <h1 id="quiz-title-display" class="hidden">Kuisia Viral</h1>
 
         <div id="setup-container" class="quiz-card-landing">
             <div class="card-banner">
-                <div class="category-badge">Recomended Quiz</div>
+                <div class="category-badge">Challenge</div>
                 <img id="wait-thumbnail" src="default-thumb.jpg">
             </div>
 
@@ -739,15 +756,24 @@
                 return;
             }
 
+            // Panggil Branding Global dulu sebelum memuat kuis
+            applyBrandingAds();
+
             try {
                 const snapshot = await database.ref(`quizzes_collections/${quizId}`).once('value');
                 const data = snapshot.val();
 
                 if (data) {
+                    // --- LOGIKA BRANDING (Diletakkan di dalam sini agar 'data' terbaca) ---
+                    if (data.brandingAd) {
+                        console.log("🎨 Branding ditemukan, menerapkan gaya...");
+                        applyBrandingStyles(data.brandingAd);
+                    }
+
+                    // Update UI Halaman Tunggu
                     document.getElementById('wait-quiz-title').innerText = data.title || "Siap Dimulai?";
                     document.getElementById('wait-quiz-desc').innerText = data.desc || "Ayo raih skor tertinggi!";
                     
-                    // Mengambil angka dimainkan
                     const playCount = (data.stats && data.stats.played) ? data.stats.played : 0;
                     const playCountElement = document.getElementById('wait-play-count');
                     if (playCountElement) {
@@ -760,7 +786,7 @@
                         img.style.display = 'block';
                     }
 
-                    // Memuat Soal
+                    // Memuat & Mengacak Soal
                     let allQuestions = [];
                     if (Array.isArray(data.questions)) {
                         allQuestions = data.questions;
@@ -768,13 +794,11 @@
                         allQuestions = Object.values(data.questions);
                     }
 
-                    // --- LOGIKA SHUFFLE (ACAK) ---
-                    // Mengacak urutan 20 soal, lalu mengambil 10 saja
                     questions = allQuestions
                         .sort(() => Math.random() - 0.5)
                         .slice(0, 10);
                     
-                    console.log("Berhasil memuat " + questions.length + " soal acak.");
+                    console.log("Berhasil memuat " + questions.length + " soal.");
                 }
             } catch (error) {
                 console.error("Gagal memuat kuis:", error);
@@ -1077,6 +1101,48 @@
                 console.log("Statistik Challenge Berhasil Diperbarui");
             });
         }
+
+
+        function applyBrandingAds() {
+            const today = new Date().toISOString().split('T')[0];
+            const logoArea = document.getElementById('branding-logo-area');
+            const divider = document.getElementById('branding-divider');
+
+            database.ref('settings/ads/branding').on('value', (snapshot) => {
+                snapshot.forEach((child) => {
+                    const ad = child.val();
+                    
+                    // Periksa periode tayang
+                    if (today >= ad.startDate && today <= ad.endDate) {
+                        console.log("🚀 Menerapkan Branding Presisi:", ad.client);
+                        
+                        // Set warna tema
+                        if (ad.brandColor) {
+                            document.documentElement.style.setProperty('--accent', ad.brandColor);
+                            document.documentElement.style.setProperty('--accent-light', ad.brandColor + '44');
+                        }
+                        
+                        // Isi Logo Sponsor ke Sisi Kiri
+                        if (logoArea && ad.logoUrl) {
+                            // Munculkan garis pemisah
+                            if (divider) divider.style.display = 'block';
+
+                            // Di dalam fungsi applyBrandingAds, bagian logoArea.innerHTML ganti dengan ini:
+
+                            logoArea.innerHTML = `
+                                <div style="display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.8s ease;">
+                                    <p style="font-size: 0.65rem; color: #94a3b8; margin: 0 0 5px 0; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;">
+                                        Supported by
+                                    </p>
+                                    <img src="${ad.logoUrl}" style="max-height: 65px; width: auto; object-fit: contain;">
+                                </div>
+                            `;
+                        }
+                    }
+                });
+            });
+        }
+
     </script>
 </body>
 </html>
